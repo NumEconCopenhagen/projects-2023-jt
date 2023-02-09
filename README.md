@@ -3,7 +3,7 @@
 **Group members:**
 - A Tobias 
 - B Juliane
-- C
+- C Sumaya
 
 This repository contains  
 1. Inaugural project. 
