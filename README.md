@@ -1,8 +1,8 @@
 # \[Group name\]
 
 **Group members:**
-- A Tobias 
-- B Juliane
+- A Tobias :-)
+- B Juliane :-)
 
 This repository contains  
 1. Inaugural project. 
