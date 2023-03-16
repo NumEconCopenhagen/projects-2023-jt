@@ -1,0 +1,3 @@
+class household : 
+    def 
+        pass
