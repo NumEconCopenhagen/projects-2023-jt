@@ -16,7 +16,8 @@ class household :
 
 # given data with baseline parameters
 
-x= np.linspace(0,24,49)
+x = np.linspace(0,24,49)
+
 Lm = x
 Lf = x 
 Hm = x
@@ -60,3 +61,6 @@ rho = par.rho
 nu = par.nu
 def u_func(Q,Tm,Tf,epsilon,rho,nu) : 
     return (Q^(1-rho))/(1-rho)-nu * (Tm^(1+ 1/(epsilon))/(1+ 1/epsilon) + Tf^(1+ 1/epsilon)/(1+ 1/epsilon))
+
+
+
