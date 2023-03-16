@@ -59,7 +59,7 @@ class householdclass:
         elif par.sigma == 0:
             H = np.minimum(HM,HF)
         else:
-            H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma)+par.alpha*HF**((par.sigma-1)/par.sigma))**(((par.sigma-1)/par.sigma))
+            H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma)+par.alpha*HF**((par.sigma-1)/par.sigma))**((par.sigma/(par.sigma-1)))
 
 
         # c. total consumption utility
@@ -104,7 +104,7 @@ class householdclass:
         opt.HM = HM[j]
         opt.LF = LF[j]
         opt.HF = HF[j]
-
+        
         # e. print
         if do_print:
             for k,v in opt.__dict__.items():
