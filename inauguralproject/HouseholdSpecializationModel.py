@@ -7,8 +7,7 @@ from scipy import optimize
 import pandas as pd 
 import matplotlib.pyplot as plt
 
-class HouseholdSpecializationModelClass:
-
+class HouseholdSpecializationModelClass:    
     def __init__(self):
         """ setup model """
 
