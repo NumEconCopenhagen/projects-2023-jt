@@ -54,11 +54,12 @@ class HouseholdSpecializationModelClass:
 
         # b. home production
         if par.sigma == 0 :
-            H= min(Hm,Hf)
+            H = np.minimum(HM,HF)
         if par.sigma == 1 : 
-            H= Hm**(1-par.sigma) * Hf**par.sigma 
+            H = HM**(1-par.sigma) * HF**par.sigma 
         else : 
-            H= ((1-par.alpha)*Hm**((par.sigma-1)/par.sigma) + par.alpha* Hf**((par.sigma-1)/par.sigma))**(par.sigma/(par.sigma-1))
+            H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma) + par.alpha* HF**((par.sigma-1)/par.sigma))**(par.sigma/(par.sigma-1))
+
 
 
         # c. total consumption utility
