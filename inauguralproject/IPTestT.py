@@ -110,7 +110,12 @@ class householdclass:
         if do_print:
             for k,v in opt.__dict__.items():
                 print(f'{k} = {v:6.4f}')
+        
         return opt
+    def solve(self,do_print=False):
+        print(f'{k} = {v: 6.4f}')
+    
+    
 
 
 
