@@ -56,7 +56,7 @@ class HouseholdSpecializationModelClass:
         if par.sigma == 0 :
             H = np.minimum(HM,HF)
         if par.sigma == 1 : 
-            H = HM**(1-par.sigma) * HF**par.sigma 
+            H = HM**(1-par.alpha) * HF**par.alpha
         else : 
             H = ((1- par.alpha)* HM**((par.sigma-1)/ par.sigma)) + par.alpha* HF**((par.sigma-1)/ par.sigma)**(par.sigma / par.sigma-1)
 
