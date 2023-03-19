@@ -115,7 +115,40 @@ class HouseholdSpecializationModelClass:
     def solve(self,do_print=False):
         """ solve model continously """
 
-        pass    
+        par = self.par
+        sol = self.sol
+        opt = SimpleNamespace()
+        
+        # a. all possible choices
+        y = np.linspace(0,24,1441)
+        LM,HM,LF,HF = np.meshgrid(y,y,y,y) # all combinations
+    
+        LM = LM.ravel() # vector
+        HM = HM.ravel()
+        LF = LF.ravel()
+        HF = HF.ravel()
+
+        # b. calculate utility
+        u = self.calc_utility(LM,HM,LF,HF)
+    
+        # c. set to minus infinity if constraint is broken
+        I = (LM+HM > 24) | (LF+HF > 24) # | is "or"
+        u[I] = -np.inf
+    
+        # d. find maximizing argument
+        j = np.argmax(u)
+        
+        opt.LM = LM[j]
+        opt.HM = HM[j]
+        opt.LF = LF[j]
+        opt.HF = HF[j]
+
+        # e. print
+        if do_print:
+            for k,v in opt.__dict__.items():
+                print(f'{k} = {v:6.4f}')
+
+        return opt
 
     def solve_wF_vec(self,discrete=False):
         """ solve model for vector of female wages """
