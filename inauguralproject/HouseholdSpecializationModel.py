@@ -120,7 +120,7 @@ class HouseholdSpecializationModelClass:
         opt = SimpleNamespace()
         
         # a. all possible choices
-        y = np.linspace(0,24,1441)
+        y = np.linspace(0,24,86401)
         LM,HM,LF,HF = np.meshgrid(y,y,y,y) # all combinations
     
         LM = LM.ravel() # vector
