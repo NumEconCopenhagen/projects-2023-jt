@@ -115,6 +115,22 @@ class HouseholdSpecializationModelClass:
     def solve(self,do_print=False):
         """ solve model continously """
 
+        obj = lambda x: 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         pass    
 
     def solve_wF_vec(self,discrete=False):

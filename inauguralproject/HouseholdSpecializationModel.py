@@ -119,9 +119,9 @@ class HouseholdSpecializationModelClass:
         par = self.par
         sol = self.sol
         opt = SimpleNamespace()
-        
+        N = 86401
         # a. all possible choices
-        y = np.linspace(0,24,86401)
+        y = np.linspace(0,24,N)
         LM,HM,LF,HF = np.meshgrid(y,y,y,y) # all combinations
     
         LM = LM.ravel() # vector
