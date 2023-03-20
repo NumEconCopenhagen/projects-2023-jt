@@ -61,7 +61,6 @@ class HouseholdSpecializationModelClass:
             H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma) + par.alpha* HF**((par.sigma-1)/par.sigma))**(par.sigma/(par.sigma-1))
 
 
-
         # c. total consumption utility
         Q = C**par.omega*H**(1-par.omega)
         utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho)
@@ -115,41 +114,44 @@ class HouseholdSpecializationModelClass:
     def solve(self,do_print=False):
         """ solve model continously """
 
-        
-        par = self.par
-        sol = self.sol
+        par = self.par 
+        sol = self.sol 
         opt = SimpleNamespace()
-        N = 86401
-        # a. all possible choices
-        y = np.linspace(0,24,N)
-        LM,HM,LF,HF = np.meshgrid(y,y,y,y) # all combinations
-    
-        LM = LM.ravel() # vector
-        HM = HM.ravel()
-        LF = LF.ravel()
-        HF = HF.ravel()
 
-        # b. calculate utility
-        u = self.calc_utility(LM,HM,LF,HF)
-    
-        # c. set to minus infinity if constraint is broken
-        I = (LM+HM > 24) | (LF+HF > 24) # | is "or"
-        u[I] = -np.inf
-    
-        # d. find maximizing argument
-        j = np.argmax(u)
-        
-        opt.LM = LM[j]
-        opt.HM = HM[j]
-        opt.LF = LF[j]
-        opt.HF = HF[j]
+        # We start by making our guesses 
+        LM_guess = 2
+        LF_guess = 2
+        HM_guess = 2
+        HF_guess = 2
+        x_guess = [LM_guess, LF_guess, HM_guess, HF_guess ]
 
-        # e. print
+        # We create an objective.
+        # The  objective will in this case be the negative utility function. 
+        # The reason for the negative is that the optimize.minimize module minimizes the function,
+        # so to maximize, we need to minimize the negative. 
+    
+        obj = lambda x: -self.calc_utility(x[0],x[1],x[2],x[3])
+
+        # We define the bounds, which are the minimum and maximum that the values can take.
+
+        bounds = ((1e-8,24-1e-8), (1e-8,24-1e-8),(1e-8,24-1e-8), (1e-8,24-1e-8))
+
+        # We no create the result, we use the Nelder-Mead method. 
+        result = optimize.minimize(obj,x_guess,method='Nelder-Mead',bounds=bounds)
+
+        opt.LM = result.x[0]
+        opt.HM = result.x[1]
+        opt.LF = result.x[2]
+        opt.HF = result.x[3]
+
+        # Print. 
         if do_print:
             for k,v in opt.__dict__.items():
                 print(f'{k} = {v:6.4f}')
+    
 
-        return opt
+        return opt  
+
 
     def solve_wF_vec(self,discrete=False):
         """ solve model for vector of female wages """

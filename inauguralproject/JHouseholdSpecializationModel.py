@@ -114,33 +114,43 @@ class HouseholdSpecializationModelClass:
 
     def solve(self,do_print=False):
         """ solve model continously """
+        par = self.par 
+        sol = self.sol 
+        opt = SimpleNamespace()
 
-       
-        def u_func(Q,Tm,Tf,par.epsilon,par.rho,par.nu) : 
-            return (Q^(1-par.rho))/(1-par.rho)-par.nu * (Tm^(1+ 1/(par.epsilon))/(1+ 1/par.epsilon) + Tf^(1+ 1/par.epsilon)/(1+ 1/par.epsilon))
+        # We start by making our guesses 
+        LM_guess = 2
+        LF_guess = 2
+        HM_guess = 2
+        HF_guess = 2
+        x_guess = [LM_guess, LF_guess, HM_guess, HF_guess ]
 
-        obj = lambda x: 
+        # We create an objective.
+        # The  objective will in this case be the negative utility function. 
+        # The reason for the negative is that the optimize.minimize module minimizes the function,
+        # so to maximize, we need to minimize the negative. 
+    
+        obj = lambda x: -calc_utility(self,LM[0],HM[1],LF[2],HF[3])
 
+        # We define the bounds, which are the minimum and maximum that the values can take.
 
-        result = optimize.minimize(obj,x0,method='SLSQP',bounds=bounds,constraints=constraints)
+        bounds = ((1e-8,24-1e-8), (1e-8,24-1e-8),(1e-8,24-1e-8), (1e-8,24-1e-8))
 
-        sol.LM = result.x[0]
-        sol.HM = result.x[1]
-        sol.LF = result.x[2]
-        sol.HF = result.x[3]
+        # We no create the result, we use the Nelder-Mead method. 
+        result = optimize.minimize(obj,x_guess,method='Nelder-Mead',bounds=bounds)
 
+        opt.LM = result.LM[0]
+        opt.HM = result.HM[1]
+        opt.LF = result.LF[2]
+        opt.HF = result.HF[3]
 
+        # Print. 
+        if do_print:
+            for k,v in opt.__dict__.items():
+                print(f'{k} = {v:6.4f}')
+    
 
-
-
-
-
-
-
-
-
-
-        pass    
+        return opt  
 
     def solve_wF_vec(self,discrete=False):
         """ solve model for vector of female wages """
