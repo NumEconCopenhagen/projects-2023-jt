@@ -119,10 +119,10 @@ class HouseholdSpecializationModelClass:
         opt = SimpleNamespace()
 
         # We start by making our guesses 
-        LM_guess = 2
-        LF_guess = 2
-        HM_guess = 2
-        HF_guess = 2
+        LM_guess = 6
+        LF_guess = 6
+        HM_guess = 6
+        HF_guess = 6
         x_guess = [LM_guess, LF_guess, HM_guess, HF_guess ]
 
         # We create an objective.
