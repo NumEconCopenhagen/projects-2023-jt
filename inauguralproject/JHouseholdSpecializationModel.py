@@ -115,10 +115,19 @@ class HouseholdSpecializationModelClass:
     def solve(self,do_print=False):
         """ solve model continously """
 
+       
+        def u_func(Q,Tm,Tf,par.epsilon,par.rho,par.nu) : 
+            return (Q^(1-par.rho))/(1-par.rho)-par.nu * (Tm^(1+ 1/(par.epsilon))/(1+ 1/par.epsilon) + Tf^(1+ 1/par.epsilon)/(1+ 1/par.epsilon))
+
         obj = lambda x: 
 
 
+        result = optimize.minimize(obj,x0,method='SLSQP',bounds=bounds,constraints=constraints)
 
+        sol.LM = result.x[0]
+        sol.HM = result.x[1]
+        sol.LF = result.x[2]
+        sol.HF = result.x[3]
 
 
 
