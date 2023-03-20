@@ -112,7 +112,7 @@ class HouseholdSpecializationModelClass:
         return opt
 
     def solve(self,do_print=False):
-        """ solve model continously """
+        """ solve model continously """ # We have added the code to solve for the continuous choice set. 
 
         par = self.par 
         sol = self.sol 
