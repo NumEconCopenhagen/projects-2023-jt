@@ -157,19 +157,19 @@ class HouseholdSpecializationModelClass:
         """ solve model for vector of female wages """
         par = self.par
         sol = self.sol
-        ratio = SimpleNamespace()
+        
+        # we create the loop
+        for i in enumerate
 
-        # We make a vector out of the wF values. 
-        Wf = np.array(par.wF_vec)
+            if discrete == True 
+            optimal = solve_discrete(self) 
+        
+        par.wF_vec = wF 
 
-        # We take the log-values
-
-       
-
-
-
-    
-
+        sol.LM_vec = 
+        sol.HM_vec =
+        sol.LF_vec =
+        sol.HF_vec = 
 
 
 
