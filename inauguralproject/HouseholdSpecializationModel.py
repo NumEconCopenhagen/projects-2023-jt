@@ -174,11 +174,3 @@ class HouseholdSpecializationModelClass:
 
         pass
 
-
-    def square(self):
-
-
-
-    return (par.beta0_target - sol.beta0)**2 + (par.beta1_target - sol.beta1)**2
-
-
