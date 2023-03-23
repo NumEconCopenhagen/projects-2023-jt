@@ -136,7 +136,7 @@ class HouseholdSpecializationModelClass:
 
         bounds = ((1e-8,24-1e-8), (1e-8,24-1e-8),(1e-8,24-1e-8), (1e-8,24-1e-8))
 
-        # We no create the result, we use the Nelder-Mead method. 
+        # We now create the result, we use the Nelder-Mead method. 
         result = optimize.minimize(obj,x_guess,method='Nelder-Mead',bounds=bounds)
 
         opt.LM = result.x[0]
@@ -173,3 +173,12 @@ class HouseholdSpecializationModelClass:
         """ estimate alpha and sigma """
 
         pass
+
+
+    def square(self):
+
+
+
+    return (par.beta0_target - sol.beta0)**2 + (par.beta1_target - sol.beta1)**2
+
+
