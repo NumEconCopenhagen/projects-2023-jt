@@ -109,7 +109,7 @@ class HouseholdSpecializationModelClass:
                 print(f'{k} = {v:6.4f}')
 
         return opt
-
+    # Defining the method to solve the model continuously
     def solve(self,do_print=False):
         """ solve model continously """ # We have added the code to solve for the continuous choice set. 
 
@@ -151,7 +151,7 @@ class HouseholdSpecializationModelClass:
     
 
         return opt  
-
+    # Defining the method to solve for the wF vector
     def solve_wF_vec(self, discrete=False, do_print=False, do_plot=False):
         
         par = self.par
@@ -201,41 +201,46 @@ class HouseholdSpecializationModelClass:
             plt.title("Scatter of log of wF and HF/HM")
             plt.show()
             
-            
+    # Defining the regression method        
     def run_regression(self, print_beta=False):
         """ run regression """
 
         par = self.par
         sol = self.sol
-
+        # Taking log of the vectors
         x = np.log(par.wF_vec)
         y = np.log(sol.HF_vec/sol.HM_vec)
+        # Finding the beta values
         A = np.vstack([np.ones(x.size),x]).T
         sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0]
-        
+        # Adding an option to print the beta values
         if print_beta:
             print(f"Beta0 = {sol.beta0}, Beta1 = {sol.beta1}")
-        #return sol.beta0, sol.beta1
             
+    # Defining the method for estimating the optimal alpha and sigma values
     def estimate(self,alpha=None,sigma=None, do_print=False):
         """ estimate alpha and sigma """
         sol = self.sol
         par = self.par
-        
+        #Defining the guesses
         alpha_guess = 0.5
         sigma_guess = 1
         as_guess = (alpha_guess, sigma_guess)
+        
+        # Defining the bounds
         bounds = ((1e-8,1), (1e-8,1.5))
+        
+        # Defining the objective function
         def obj(x):
             par.alpha, par.sigma = x
             self.solve_wF_vec()
             self.run_regression()
             Rsqr = (par.beta0_target-sol.beta0)**2 + (par.beta1_target-sol.beta1)**2
-
-
             return Rsqr
+        # Minimizing the R-squared value with scipy
         goal = optimize.minimize(obj, as_guess, method="Nelder-Mead", bounds=bounds)
-        if do_print:
+        # Adding an option to print the optimized values
+        if  do_print:
             par.alpha, par.sigma = goal.x
             self.solve_wF_vec()
             self.run_regression()
