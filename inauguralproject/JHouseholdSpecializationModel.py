@@ -53,13 +53,12 @@ class HouseholdSpecializationModelClass:
         C = par.wM*LM + par.wF*LF
 
         # b. home production
-        if par.sigma == 1 : 
-            H = HM**(1-par.alpha) * HF**par.alpha
-        elif par.sigma == 0 :
+        if par.sigma == 0 :
             H = np.minimum(HM,HF)
+        if par.sigma == 1 : 
+            H = HM**(1-par.alpha) * HF**par.alpha 
         else : 
-            H = ((1- par.alpha)* HM**((par.sigma-1)/ par.sigma) + par.alpha* HF**((par.sigma-1)/ par.sigma))**(par.sigma / par.sigma-1)
-
+            H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma) + par.alpha* HF**((par.sigma-1)/par.sigma))**(par.sigma/(par.sigma-1))
 
 
         # c. total consumption utility
@@ -113,16 +112,17 @@ class HouseholdSpecializationModelClass:
         return opt
 
     def solve(self,do_print=False):
-        """ solve model continously """
+        """ solve model continously """ # We have added the code to solve for the continuous choice set. 
+
         par = self.par 
         sol = self.sol 
         opt = SimpleNamespace()
 
         # We start by making our guesses 
-        LM_guess = 2
-        LF_guess = 2
-        HM_guess = 2
-        HF_guess = 2
+        LM_guess = 6
+        LF_guess = 6
+        HM_guess = 6
+        HF_guess = 6
         x_guess = [LM_guess, LF_guess, HM_guess, HF_guess ]
 
         # We create an objective.
@@ -130,19 +130,19 @@ class HouseholdSpecializationModelClass:
         # The reason for the negative is that the optimize.minimize module minimizes the function,
         # so to maximize, we need to minimize the negative. 
     
-        obj = lambda x: -calc_utility(self,LM[0],HM[1],LF[2],HF[3])
+        obj = lambda x: -self.calc_utility(x[0],x[1],x[2],x[3])
 
         # We define the bounds, which are the minimum and maximum that the values can take.
 
         bounds = ((1e-8,24-1e-8), (1e-8,24-1e-8),(1e-8,24-1e-8), (1e-8,24-1e-8))
 
-        # We no create the result, we use the Nelder-Mead method. 
+        # We now create the result, we use the Nelder-Mead method. 
         result = optimize.minimize(obj,x_guess,method='Nelder-Mead',bounds=bounds)
 
-        opt.LM = result.LM[0]
-        opt.HM = result.HM[1]
-        opt.LF = result.LF[2]
-        opt.HF = result.HF[3]
+        opt.LM = result.x[0]
+        opt.HM = result.x[1]
+        opt.LF = result.x[2]
+        opt.HF = result.x[3]
 
         # Print. 
         if do_print:
@@ -152,8 +152,26 @@ class HouseholdSpecializationModelClass:
 
         return opt  
 
+
     def solve_wF_vec(self,discrete=False):
         """ solve model for vector of female wages """
+        par = self.par
+        sol = self.sol
+        ratio = SimpleNamespace()
+
+        # We make a vector out of the wF values. 
+        Wf = np.array(par.wF_vec)
+
+        # We take the log-values
+
+       
+
+
+
+    
+
+
+
 
         pass
 
@@ -172,3 +190,10 @@ class HouseholdSpecializationModelClass:
         """ estimate alpha and sigma """
 
         pass
+
+
+
+    def 
+
+
+
