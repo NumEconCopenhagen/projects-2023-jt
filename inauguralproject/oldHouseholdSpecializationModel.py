@@ -7,8 +7,7 @@ from scipy import optimize
 import pandas as pd 
 import matplotlib.pyplot as plt
 
-class householdclass:
-
+class HouseholdSpecializationModelClass:    
     def __init__(self):
         """ setup model """
 
@@ -54,12 +53,12 @@ class householdclass:
         C = par.wM*LM + par.wF*LF
 
         # b. home production
-        if par.sigma == 1:
-            H = HM**(1-par.alpha)*HF**par.alpha
-        elif par.sigma == 0:
+        if par.sigma == 0 :
             H = np.minimum(HM,HF)
-        else:
-            H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma)+par.alpha*HF**((par.sigma-1)/par.sigma))**((par.sigma/(par.sigma-1)))
+        if par.sigma == 1 : 
+            H = HM**(1-par.alpha) * HF**par.alpha 
+        else : 
+            H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma) + par.alpha* HF**((par.sigma-1)/par.sigma))**(par.sigma/(par.sigma-1))
 
 
         # c. total consumption utility
@@ -104,7 +103,7 @@ class householdclass:
         opt.HM = HM[j]
         opt.LF = LF[j]
         opt.HF = HF[j]
-        
+
         # e. print
         if do_print:
             for k,v in opt.__dict__.items():
@@ -113,9 +112,46 @@ class householdclass:
         return opt
 
     def solve(self,do_print=False):
-        """ solve model continously """
+        """ solve model continously """ # We have added the code to solve for the continuous choice set. 
 
-        pass    
+        par = self.par 
+        sol = self.sol 
+        opt = SimpleNamespace()
+
+        # We start by making our guesses 
+        LM_guess = 6
+        LF_guess = 6
+        HM_guess = 6
+        HF_guess = 6
+        x_guess = [LM_guess, LF_guess, HM_guess, HF_guess ]
+
+        # We create an objective.
+        # The  objective will in this case be the negative utility function. 
+        # The reason for the negative is that the optimize.minimize module minimizes the function,
+        # so to maximize, we need to minimize the negative. 
+    
+        obj = lambda x: -self.calc_utility(x[0],x[1],x[2],x[3])
+
+        # We define the bounds, which are the minimum and maximum that the values can take.
+
+        bounds = ((1e-8,24-1e-8), (1e-8,24-1e-8),(1e-8,24-1e-8), (1e-8,24-1e-8))
+
+        # We now create the result, we use the Nelder-Mead method. 
+        result = optimize.minimize(obj,x_guess,method='Nelder-Mead',bounds=bounds)
+
+        opt.LM = result.x[0]
+        opt.HM = result.x[1]
+        opt.LF = result.x[2]
+        opt.HF = result.x[3]
+
+        # Print. 
+        if do_print:
+            for k,v in opt.__dict__.items():
+                print(f'{k} = {v:6.4f}')
+    
+
+        return opt  
+
 
     def solve_wF_vec(self,discrete=False):
         """ solve model for vector of female wages """
@@ -137,3 +173,4 @@ class householdclass:
         """ estimate alpha and sigma """
 
         pass
+

@@ -7,7 +7,8 @@ from scipy import optimize
 import pandas as pd 
 import matplotlib.pyplot as plt
 
-class HouseholdSpecializationModelClass:    
+class HouseholdSpecializationModelClass:
+
     def __init__(self):
         """ setup model """
 
@@ -53,14 +54,12 @@ class HouseholdSpecializationModelClass:
         C = par.wM*LM + par.wF*LF
 
         # b. home production
-        if par.sigma == 0 :
-            H = np.minimum(HM,HF)
-        if par.sigma == 1 : 
-            H = HM**(1-par.alpha) * HF**par.alpha 
-        else : 
-            H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma) + par.alpha* HF**((par.sigma-1)/par.sigma))**(par.sigma/(par.sigma-1))
-
-
+        if par.sigma == 1:
+            H = HM**(1-par.alpha)*HF**par.alpha
+        elif par.sigma == 0:
+            H = np.minimum(HF, HM)
+        else:
+            H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma)+par.alpha*HF**((par.sigma-1)/par.sigma))**(par.sigma/(par.sigma-1))
         # c. total consumption utility
         Q = C**par.omega*H**(1-par.omega)
         utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho)
@@ -144,6 +143,7 @@ class HouseholdSpecializationModelClass:
         opt.LF = result.x[2]
         opt.HF = result.x[3]
 
+
         # Print. 
         if do_print:
             for k,v in opt.__dict__.items():
@@ -152,13 +152,57 @@ class HouseholdSpecializationModelClass:
 
         return opt  
 
-
-    def solve_wF_vec(self,discrete=False):
-        """ solve model for vector of female wages """
-
-        pass
-
-    def run_regression(self):
+    def solve_wF_vec(self, discrete=False, do_print=False, do_plot=False):
+        
+        par = self.par
+        sol = self.sol
+        
+        # Adding a continous solution
+        if discrete == False:
+            # Solving for wF_vec
+            for i, wF in enumerate(self.par.wF_vec):
+                # Set wF for this iteration
+                self.par.wF = wF
+                # Solve for optimal choices
+                opt = self.solve()
+                # Store results in solution arrays
+                sol.HM_vec[i] = opt.HM
+                sol.HF_vec[i] = opt.HF
+            pass
+        
+        # Adding a discrete solution
+        if discrete == True:
+            # Solving for wF_vec
+            for i, wF in enumerate(self.par.wF_vec):
+                # Set wF
+                self.par.wF = wF
+                # Solve for optimal choices
+                opt = self.solve_discrete()
+                # Storing results in solution arrays
+                sol.HM_vec[i] = opt.HM
+                sol.HF_vec[i] = opt.HF
+            pass
+        
+        # Adding a print option
+        if do_print:
+            print(f'HM Vector:{sol.HM_vec}')
+            print(f'HF Vector:{sol.HF_vec}')
+            print(f'wF Vector:{par.wF_vec}')
+            
+        #Adding a scatterplot option
+        if do_plot:
+            x = np.log(par.wF_vec)
+            y = np.log(sol.HF_vec/sol.HM_vec)
+            plt.scatter(x,y)
+            slope, intercept = np.polyfit(x, y, 1)
+            plt.plot(x, slope * x + intercept, color='blue')
+            plt.xlabel("Log of wF")
+            plt.ylabel("Log of HF/HM")
+            plt.title("Scatter of log of wF and HF/HM")
+            plt.show()
+            
+            
+    def run_regression(self, print_beta=False):
         """ run regression """
 
         par = self.par
@@ -168,9 +212,38 @@ class HouseholdSpecializationModelClass:
         y = np.log(sol.HF_vec/sol.HM_vec)
         A = np.vstack([np.ones(x.size),x]).T
         sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0]
-    
-    def estimate(self,alpha=None,sigma=None):
+        
+        if print_beta:
+            print(f"Beta0 = {sol.beta0}, Beta1 = {sol.beta1}")
+        #return sol.beta0, sol.beta1
+            
+    def estimate(self,alpha=None,sigma=None, do_print=False):
         """ estimate alpha and sigma """
+        sol = self.sol
+        par = self.par
+        
+        alpha_guess = 0.5
+        sigma_guess = 1
+        as_guess = (alpha_guess, sigma_guess)
+        bounds = ((1e-8,1), (1e-8,1.5))
+        def obj(x):
+            par.alpha, par.sigma = x
+            self.solve_wF_vec()
+            self.run_regression()
+            Rsqr = (par.beta0_target-sol.beta0)**2 + (par.beta1_target-sol.beta1)**2
 
+
+            return Rsqr
+        goal = optimize.minimize(obj, as_guess, method="Nelder-Mead", bounds=bounds)
+        if do_print:
+            par.alpha, par.sigma = goal.x
+            self.solve_wF_vec()
+            self.run_regression()
+            Rsqr = (par.beta0_target-sol.beta0)**2 + (par.beta1_target-sol.beta1)**2
+            print(f"alpha = {par.alpha:6.4f}")
+            print(f"sigma = {par.sigma:6.4f}")
+            print(f"beta0 = {sol.beta0:6.4f}")
+            print(f"beta1 = {sol.beta1:6.4f}")
+            print(f"R-squared = {Rsqr:6.4f}")
+            
         pass
-
