@@ -6,6 +6,7 @@ from scipy import optimize
 
 import pandas as pd 
 import matplotlib.pyplot as plt
+import ipywidgets 
 
 class HouseholdSpecializationModelClass:
 
@@ -252,3 +253,6 @@ class HouseholdSpecializationModelClass:
             print(f"R-squared = {Rsqr:6.4f}")
             
         pass
+
+
+    
