@@ -1,4 +1,4 @@
-# \[Group name\]
+# \JT\]
 
 **Group members:**
 - A Tobias :-)
