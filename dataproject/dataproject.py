@@ -14,13 +14,57 @@ def keep_regs(df, regs):
         df = df.loc[I == False] # keep everything else
     
     return df
-#Importing modules:
+# Importing modules:
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import ipywidgets as widgets
 from matplotlib_venn import venn2
 import pandas_datareader.data as web
+
+# If you dont have the eurostat extension installed, it will be necessary to run the code below
+# %pip install eurostat
 import eurostat
 
-# Setting up our data APIs
+# We access the data from eurostat and call it df
+df = eurostat.get_data_df('nama_10_gdp')
+
+# We choose which rows that we want to see.
+    # we have chosen to se the gross domestic product in Chain linked volumes (2015), million euro. 
+gdp = df[df['na_item'] == 'B1GQ']
+gdp = gdp[gdp['unit']=='CLV15_MEUR']
+
+# We remove the columns freq, unit, na_item, and the years 1975-2011
+drop_these = ['freq' ,] + [str(i) for i in range(1975,2012,1)]
+gdp.drop(drop_these, axis=1, inplace=True) # axis = 1 -> columns, inplace=True -> changed, no copy made
+
+ # We rename the coloumn geo\TIME_PERIOD
+gdp.rename(columns={'geo\TIME_PERIOD': 'Country_code'}, inplace=True)
+
+# We remove the aggregate values in our data as we only are interested in the specific countries.
+remove_these = ['EA', 'EA12', 'EA19', 'EA20', 'EU15', 'EU27_2020', 'EU28']
+
+for i in remove_these : 
+    gdp = gdp[gdp['Country_code']!= i]
+
+# we are resetting the index
+gdp.reset_index(inplace = True, drop = True)
+
+# We are now downloading our data for the population of the different countries.
+# we name our parameters
+code = 'DEMO_PJAN'
+pars = eurostat.get_pars(code)
+
+# We access the data that we need
+# This time we are doing it by filtering directly from the data source instead of cleaning it afterwards.
+my_filter_pars = {'startPeriod':2012,'endPeriod': 2022, 'sex': 'T', 'age':'TOTAL'}
+population = eurostat.get_data_df(code, filter_pars=my_filter_pars)
+
+# We rename the column geo\TIME_PERIOD
+
+population.rename(columns={'geo\TIME_PERIOD': 'Country_code'}, inplace=True)
+
+# We are again deleting the columns we dont need. We are going by the aggregates and we therefore dont need these columns
+del_coloumns = ['freq' , 'unit', 'age', 'sex']
+
+population.drop(columns=del_coloumns, axis=1, inplace=True) 
