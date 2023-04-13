@@ -23,7 +23,7 @@ from matplotlib_venn import venn2
 import pandas_datareader.data as web
 
 # If you dont have the eurostat extension installed, it will be necessary to run the code below
-# %pip install eurostat
+## %pip install eurostat
 import eurostat
 
 # We access the data from eurostat and call it df
