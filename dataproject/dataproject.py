@@ -68,3 +68,21 @@ population.rename(columns={'geo\TIME_PERIOD': 'Country_code'}, inplace=True)
 del_coloumns = ['freq' , 'unit', 'age', 'sex']
 
 population.drop(columns=del_coloumns, axis=1, inplace=True) 
+
+# We are now chaning the direction of the two datasets, making them long rather than wide. 
+population_long = pd.wide_to_long(population , stubnames='' , i= 'Country_code', j= 'year')
+
+gdp_long = pd.wide_to_long(gdp, stubnames= '', i= 'Country_code' , j= 'year')
+
+# We will now merge the two datasets, by doing an inner join; meaning we choose the observations (countries) which are in both datasets. 
+inner = pd.merge(gdp_long, population_long, how = 'inner' , on = ['Country_code' , 'year'])
+
+# We are now renaming our columns to the representative names
+inner.rename(columns={'_x': 'GDP', '_y':'Population'}, inplace=True)
+inner.reset_index(inplace=True)
+
+# Dropping the countries that have Nan for all values of either GDP or population
+inner.dropna(inplace=True)
+
+# We are now creating a new column for GDP per capita, since GDP is in millions we multiply by 1.000.000
+inner["GDP/Cap"] = inner["GDP"]*1000000/inner["Population"]
