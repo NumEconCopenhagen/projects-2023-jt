@@ -1,6 +1,6 @@
 # Data analysis project
 
-Our project is titled **PROJECT TITLE** and is about EXPLAIN.
+Our project is titled **GDP and Capita in the EU** and shows how the GDP per capita has changed through the years 2012-2022. 
 
 The **results** of the project can be seen from running [dataproject.ipynb](dataproject.ipynb).
 
