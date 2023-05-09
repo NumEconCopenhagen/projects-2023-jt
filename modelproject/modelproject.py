@@ -1,4 +1,30 @@
+from types import SimpleNamespace
 from scipy import optimize
+import numpy as np
+import sympy as sm
+
+
+import pandas as pd 
+import matplotlib.pyplot as plt
+import ipywidgets 
+
+
+class SolowModel
+    def solow(self)
+        
+        # We create the namespaces: 
+        par = self.par = SimpleNamespace()
+
+        # We name our varibles:
+
+
+        # We name our parameters:
+        par.alpha = sm.symbols('alpha')
+        par.phi  = sm.symbols('varphi')
+        
+
+
+
 
 def solve_ss(alpha, c):
     """ Example function. Solve for steady state k. 
