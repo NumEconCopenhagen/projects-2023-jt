@@ -20,8 +20,8 @@ class SolowModel
 
         # We name our parameters:
         par.alpha = sm.symbols('alpha')
-        par.phi  = sm.symbols('varphi')
-        
+        par.phi  = sm.symbols('phi')
+
 
 
 
