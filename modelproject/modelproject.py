@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 import ipywidgets 
 
 
-class SolowModel
-    def solow(self)
+class SolowModel:
+    def solow(self):
         
         # We create the namespaces: 
         par = self.par = SimpleNamespace()
@@ -21,6 +21,19 @@ class SolowModel
         # We name our parameters:
         par.alpha = sm.symbols('alpha')
         par.phi  = sm.symbols('phi')
+        par.delta = sm.symbols('delta')
+        par.n = sm.symbols('n')
+        par.g = sm.symbols('g')
+
+
+        # We name our variables
+
+        par.K_t = sm.symbols('K_{t}')
+        par.K_t1 = sm.symbols('K_{t+1}')
+        par.H_t = sm.symbols('H_{t}')
+        par.H_t1 = sm.symbols('H_{t+1}')
+
+
 
 
 
