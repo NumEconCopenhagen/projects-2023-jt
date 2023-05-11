@@ -32,6 +32,27 @@ class SolowModel:
         par.K_t1 = sm.symbols('K_{t+1}')
         par.H_t = sm.symbols('H_{t}')
         par.H_t1 = sm.symbols('H_{t+1}')
+        par.Y_t = sm.symbols('Y_{t}')
+        par.A_t = sm.symbols('A_{t}')
+        par.A_t1 = sm.symbols('A_{t+1}')
+        par.L_t = sm.symbols('L_{t}')
+        par.L_t1 = sm.symbols('L_{t+1}')
+        par.r_t = sm.symbols('r_{t}')
+        par.w_t = sm.symbols('w_{t}')
+        
+
+        # We now define our equations as given by the book
+
+        par.Y_t = par.K_t**par.alpha * par.H_t**par.phi * (A_t * L_t)^(1-par.alpha - par.phi)
+        par.r_t = 
+        par.w_t = 
+        par.K_t1 - par.K_t = 
+        par.H_t1 - par.H_t = 
+        par.L_t1 = 
+        par.A_t1 = 
+
+
+
 
 
 
