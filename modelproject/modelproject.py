@@ -10,21 +10,29 @@ import ipywidgets
 
 
 class SolowModelClass:
-    def parameters(self):
+    def __init__(self):
         
         # We create the namespaces: 
         par = self.par = SimpleNamespace()
+        sim = self.sim = SimpleNamespace()
 
+        # We define our sim parameters, these will create the ground for our simulation.
+        sim.alpha = 0.333
+        sim.phi = 0.333
+        sim.delta = 0.02
+        sim.n = 0.014
+        sim.g = 0.016
+        sim.s_K = 0.25
+        sim.s_H = 0.129
 
         # We name our parameters:
-        par.alpha = 0.33
-        par.phi  = 0.5
-        par.delta =  0.05
-        par.n = 0.05
-        par.g = 0.05
-        par.s_K = 0.1
-        par.s_H = 0.1
-
+        par.alpha = sm.symbols('alpha')
+        par.phi  = sm.symbols('phi') 
+        par.delta = sm.symbols('delta') 
+        par.n = sm.symbols('n') 
+        par.g = sm.symbols('g') 
+        par.s_K = sm.symbols('s_{K}') 
+        par.s_H = sm.symbols('s_{H}') 
 
         # We name our variables
 
@@ -50,55 +58,45 @@ class SolowModelClass:
 
     # we will define our functions as given by the book:
     def ProductionFunction(self):
-        par = self.par
+        par = self.sim
         Production = sm.Eq(par.Y_t,par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi))
 
         return
 
     def LabourSupply(self):
-        par = self.par
+        par = self.sim
         Labor_supply = sm.Eq(par.L_t1,(1+par.n)*par.L_t )
 
         return
 
     def LabourProductivity(self):
-        par = self.par
+        par = self.sim
         Productivity = sm.Eq(par.A_t1 , (1+ par.g)*par.A_t)
 
         return
 
     def RentalrateOfCapital(self):
-        par = self.par
+        par = self.sim
         RentalRate = sm.Eq(par.r_t,par.alpha * (par.K_t/(par.A_t * par.L_t))^(par.alpha -1) * (par.H_t/(par.A_t * par.L_t))^par.phi)
 
         return
 
     def RealWageRate(self):
-        par = self.par
+        par = self.sim
         WageRate = sm.Eq(par.w_t, par.alpha * (par.K_t/(par.A_t * par.L_t))^par.alpha * (par.H_t/(par.A_t * par.L_t))^par.phi * par.A_t)
 
         return
 
     def HumanCapitalAccumulation(self):
-        par = self.par
+        par = self.sim
         HumanCapital = sm.Eq(par.H_t1 , par.s_H * par.Y_t + par.delta * par.H_t)
 
         return
 
     def PhysicalCapitalAccumulation(self):
-        par = self.par
+        par = self.sim
         PhysicalCapital = sm.Eq(par.K_t1 , par.s_K * par.Y_t + par.delta * par.K_t)
-
-        P_C_Function = sm.lambdify((par.s_K,par.Y_t,par.delta,par.K_t),PhysicalCapital)
-
-
-
-        return    
-
-    def PhysicalCapitalFunction(self):
-        par = self.par
-
-
+ 
     def SteadyStateValues(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
         k = sm.symbols('k')
         h = sm.symbols('h')
@@ -136,13 +134,21 @@ class SolowModelClass:
     
         return 
 
-    def SteadyStateFunctions(k,h,alpha,delta,s_K,s_H,g,n,phi):
+    def SteadyStateFunctions(self,do_print=True):
 
-        kss_function = sm.lambdify((alpha,delta,s_K,s_H,g,n,phi),k_ss)
-        hss_function = sm.lambdify((alpha,delta,s_K,s_H,g,n,phi),h_ss) 
+        par = self.sim 
+
+        k_tilde = ( (par.s_K**(1-par.phi) * par.s_H**par.phi)/(par.n+par.g+par.delta +par.n*par.g))^(1/(1-par.phi-par.alpha))
+
+        h_tilde = ( (par.s_K**(par.alpha) * par.s_H**(1-par.alpha))/(par.n+par.g+par.delta +par.n*par.g))^(1/(1-par.phi-par.alpha))
+        kss_function = sm.lambdify((par.alpha,par.delta,par.s_K,par.s_H,par.g,par.n,par.phi),k_tilde)
+        hss_function = sm.lambdify((par.alpha,par.delta,par.s_K,par.s_H,par.g,par.n,par.phi),h_tilde) 
 
         return kss_function and hss_function 
    
+
+   
+
 
 def solve_ss(alpha, c):
     """ Example function. Solve for steady state k. 
