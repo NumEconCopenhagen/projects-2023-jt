@@ -17,18 +17,18 @@ class SolowModelClass:
 
 
         # We name our parameters:
-        par.alpha = sm.symbols('alpha')
-        par.phi  = sm.symbols('phi')
-        par.delta = sm.symbols('delta')
-        par.n = sm.symbols('n')
-        par.g = sm.symbols('g')
-        par.s_K = sm.symbols('s_{K}')
-        par.s_H = sm.symbols('s_{H}')
+        par.alpha = 0.33
+        par.phi  = 0.5
+        par.delta =  0.05
+        par.n = 0.05
+        par.g = 0.05
+        par.s_K = 0.1
+        par.s_H = 0.1
 
 
         # We name our variables
 
-        par.K_t = sm.symbols('K_{t}')
+        par.K_t = sm.symbols('K_{t}') 
         par.K_t1 = sm.symbols('K_{t+1}')
         par.H_t = sm.symbols('H_{t}')
         par.H_t1 = sm.symbols('H_{t+1}')
@@ -89,52 +89,60 @@ class SolowModelClass:
         par = self.par
         PhysicalCapital = sm.Eq(par.K_t1 , par.s_K * par.Y_t + par.delta * par.K_t)
 
+        P_C_Function = sm.lambdify((par.s_K,par.Y_t,par.delta,par.K_t),PhysicalCapital)
+
+
+
         return    
 
-    def SteadyState(self , do_print=False):
+    def PhysicalCapitalFunction(self):
         par = self.par
-        alpha = par.alpha
-        phi = par.phi
-        s_K = par.s_K
-        s_H = par.s_H
-        delta = par.delta
 
-        # In steady state we know that \tilde{k}_{t+1} = \tilde{k}_{t} = k
-        # and that \tilde{h}_{t+1} = \tilde{h}_{t} = h
-        # this we are defining now
-        k = par.ktilde_t = par.ktilde_t1 
-        h = par.htilde_t = par.htilde_t1 
 
-        y =  k**alpha * h**phi
+    def SteadyStateValues(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
+        k = sm.symbols('k')
+        h = sm.symbols('h')
+        alpha = sm.symbols('alpha')
+        delta = sm.symbols('delta')
+        s_K = sm.symbols('s_K')
+        s_H = sm.symbols('s_H')
+        g = sm.symbols('g')
+        n = sm.symbols('n')
+        phi = sm.symbols('phi')
+
+        y = k**alpha * h**phi
 
         # We define the function for which we are calculating the ss-value 
-        ss_k = sm.Eq(k, 1/((1+n)(1+g)) * (s_K)*y + (1-delta)*k ) 
+        ss_k = sm.Eq(k, 1/((1+n)*(1+g))*((s_K)*y+(1-delta)*k)) 
         # We find the steady state for k, by putting the lef hand side equal to 0
         kss = sm.solve(ss_k,k)[0]
-        
+                
         # We will now do the same for h
-        ss_h = sm.Eq(h, 1/((1+n)(1+g)) * (s_H)*y + (1-delta)*h ) 
+        ss_h = sm.Eq(h, 1/((1+n)*(1+g)) * ((s_H)*y+(1-delta)*h) ) 
         hss = sm.solve(ss_h,h)[0]
 
-        print('We now have these two values', 'k*=', kss , 'and h*=' , hss)
+        ## print('We now have these two values', 'k*=', kss , 'and h*=' , hss)
 
-        print('We now need to substitute to find the real steady state values')
+        ## print('We now need to substitute to find the real steady state values')
 
         # We will now do the substitution for h in kss and solve for k
-        k_ss = sm.solve(kss.subs(h,hss),k)
-        k_ss 
+        k_ss = kss.subs(h,hss)
 
         # now we do the substitution for k i hss and solve for h
-        h_ss = sm.solve(hss.subs(k,kss),h)
-        h_ss
+        h_ss = hss.subs(k,kss)
 
-        print ('We now have the steady State values for h and k' , k_ss , h_ss)
-        return
+        print('k_ss = ' , sm.latex(k_ss) ,'h_ss = ' , sm.latex(h_ss))
+        ##print ('We now have the steady State values for h and k' , k_ss , h_ss)
+    
+        return 
 
+    def SteadyStateFunctions(k,h,alpha,delta,s_K,s_H,g,n,phi):
 
+        kss_function = sm.lambdify((alpha,delta,s_K,s_H,g,n,phi),k_ss)
+        hss_function = sm.lambdify((alpha,delta,s_K,s_H,g,n,phi),h_ss) 
 
-
-
+        return kss_function and hss_function 
+   
 
 def solve_ss(alpha, c):
     """ Example function. Solve for steady state k. 
