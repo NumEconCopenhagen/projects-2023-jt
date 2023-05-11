@@ -14,8 +14,7 @@ class SolowModel:
         
         # We create the namespaces: 
         par = self.par = SimpleNamespace()
-
-        # We name our varibles:
+        sol = self.sol = SimpleNamespace()
 
 
         # We name our parameters:
@@ -24,6 +23,8 @@ class SolowModel:
         par.delta = sm.symbols('delta')
         par.n = sm.symbols('n')
         par.g = sm.symbols('g')
+        par.s_K = sm.symbols('s_{K}')
+        par.s_H = sm.symbols('s_{H}')
 
 
         # We name our variables
@@ -43,14 +44,16 @@ class SolowModel:
 
         # We now define our equations as given by the book
 
-        par.Y_t = par.K_t**par.alpha * par.H_t**par.phi * (A_t * L_t)^(1-par.alpha - par.phi)
-        par.r_t = 
-        par.w_t = 
-        par.K_t1 - par.K_t = 
-        par.H_t1 - par.H_t = 
-        par.L_t1 = 
-        par.A_t1 = 
+        par.Y_t = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * parL_t)^(1-par.alpha - par.phi)
+        par.r_t = par.alpha * (par.K_t/(par.A_t * par.L_t))^(par.alpha -1) * (par.H_t/(par.A_t * par.L_t))^par.phi
+        par.w_t = par.alpha * (par.K_t/(par.A_t * par.L_t))^par.alpha * (par.H_t/(par.A_t * par.L_t))^par.phi * par.A_t
+        par.K_t1 = par.s_K * par.Y_t - par.delta * par.K_t + par.K_t
+        par.H_t1 = par.s_H * par.Y_t - par.delta * par.H_t + par.H_t
+        par.L_t1 = (1+par.n)*par.L_t
+        par.A_t1 = (1+ par.g)*par.A_t
 
+    
+        
 
 
 
