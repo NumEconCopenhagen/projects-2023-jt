@@ -10,7 +10,7 @@ import ipywidgets
 
 
 class SolowModelClass:
-    def __init__(self):
+    def parameters(self):
         
         # We create the namespaces: 
         par = self.par = SimpleNamespace()
@@ -40,35 +40,48 @@ class SolowModelClass:
         par.r_t = sm.symbols('r_{t}')
         par.w_t = sm.symbols('w_{t}')
         
+    # we will define our functions as given by the book:
+    def ProductionFunction(self):
+        par = self.par
+        Production = sm.Eq(par.Y_t,par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi))
 
-        # We now define our equations as given by the book
+        return
 
-        par.Y_t = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi)
-        par.r_t = par.alpha * (par.K_t/(par.A_t * par.L_t))^(par.alpha -1) * (par.H_t/(par.A_t * par.L_t))^par.phi
-        par.w_t = par.alpha * (par.K_t/(par.A_t * par.L_t))^par.alpha * (par.H_t/(par.A_t * par.L_t))^par.phi * par.A_t
-        par.K_t1 = par.s_K * par.Y_t - par.delta * par.K_t + par.K_t
-        par.H_t1 = par.s_H * par.Y_t - par.delta * par.H_t + par.H_t
-        par.L_t1 = (1+par.n)*par.L_t
-        par.A_t1 = (1+ par.g)*par.A_t
+    def LabourSupply(self):
+        par = self.par
+        Labor_supply = sm.Eq(par.L_t1,(1+par.n)*par.L_t )
 
-    def SolowModelBaseline(self):
+        return
 
+    def LabourProductivity(self):
+        par = self.par
+        Productivity = sm.Eq(par.A_t1 , (1+ par.g)*par.A_t)
 
-    def ProductionFunction(self,):
-        
-        par = self.par 
-       
-        Output = sm.Eq(par.Y_t,par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi) )
-        
-    
-    def CapitalAccumulation(K_t1,Y_t,K_t,s_K,delta):
+        return
 
-        par = self.par 
-        sol = self.sol 
-        
-        par.K_t1 = par.s_K * par.Y_t - par.delta * par.K_t + par.K_t
+    def RentalrateOfCapital(self):
+        par = self.par
+        RentalRate = sm.Eq(par.r_t,par.alpha * (par.K_t/(par.A_t * par.L_t))^(par.alpha -1) * (par.H_t/(par.A_t * par.L_t))^par.phi)
 
-        return 
+        return
+
+    def RealWageRate(self):
+        par = self.par
+        WageRate = sm.Eq(par.w_t, par.alpha * (par.K_t/(par.A_t * par.L_t))^par.alpha * (par.H_t/(par.A_t * par.L_t))^par.phi * par.A_t)
+
+        return
+
+    def HumanCapitalAccumulation(self):
+        par = self.par
+        HumanCapital = sm.Eq(par.H_t1 , par.s_H * par.Y_t + par.delta * par.H_t)
+
+        return
+
+    def PhysicalCapitalAccumulation(self):
+        par = self.par
+        PhysicalCapital = sm.Eq(par.K_t1 , par.s_K * par.Y_t + par.delta * par.K_t)
+
+        return    
 
 
 
