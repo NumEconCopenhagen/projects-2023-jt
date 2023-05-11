@@ -9,12 +9,11 @@ import matplotlib.pyplot as plt
 import ipywidgets 
 
 
-class SolowModel:
-    def solow(self):
+class SolowModelClass:
+    def __init__(self):
         
         # We create the namespaces: 
         par = self.par = SimpleNamespace()
-        sol = self.sol = SimpleNamespace()
 
 
         # We name our parameters:
@@ -44,7 +43,7 @@ class SolowModel:
 
         # We now define our equations as given by the book
 
-        par.Y_t = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * parL_t)^(1-par.alpha - par.phi)
+        par.Y_t = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi)
         par.r_t = par.alpha * (par.K_t/(par.A_t * par.L_t))^(par.alpha -1) * (par.H_t/(par.A_t * par.L_t))^par.phi
         par.w_t = par.alpha * (par.K_t/(par.A_t * par.L_t))^par.alpha * (par.H_t/(par.A_t * par.L_t))^par.phi * par.A_t
         par.K_t1 = par.s_K * par.Y_t - par.delta * par.K_t + par.K_t
@@ -52,9 +51,24 @@ class SolowModel:
         par.L_t1 = (1+par.n)*par.L_t
         par.A_t1 = (1+ par.g)*par.A_t
 
-    
-        
+    def SolowModelBaseline(self):
 
+
+    def ProductionFunction(self,):
+        
+        par = self.par 
+       
+        Output = sm.Eq(par.Y_t,par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi) )
+        
+    
+    def CapitalAccumulation(K_t1,Y_t,K_t,s_K,delta):
+
+        par = self.par 
+        sol = self.sol 
+        
+        par.K_t1 = par.s_K * par.Y_t - par.delta * par.K_t + par.K_t
+
+        return 
 
 
 
