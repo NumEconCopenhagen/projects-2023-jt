@@ -194,7 +194,7 @@ class SolowModelClass:
                 htilde_func = sm.lambdify([], [htilde_expr.subs({par.phi: sim.phi, par.alpha: sim.alpha, par.s_K: sim.s_K, par.s_H: sim.s_H, par.n: sim.n, par.g: sim.g, par.delta: sim.delta})])
                 ktilde_steady_state = ktilde_func()[0]
                 htilde_steady_state = htilde_func()[0]
-                print(ktilde_steady_state,htilde_steady_state)
+                print(f"ktilde in steady state: {ktilde_steady_state}, htilde in steady state: {htilde_steady_state}")
 
                 if do_plot:
                     plt.plot(ktilde_steady_state, htilde_steady_state, 'ro', label='Steady State')
