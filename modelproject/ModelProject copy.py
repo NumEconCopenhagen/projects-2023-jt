@@ -1,9 +1,7 @@
 from types import SimpleNamespace
-
 from scipy import optimize
 import numpy as np
 import sympy as sm
-
 import pandas as pd 
 import matplotlib.pyplot as plt
 import ipywidgets 
@@ -39,36 +37,6 @@ class SolowModelClass:
         par.Y = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)**(1-par.alpha - par.phi)
         # We define the per effective worker production function
         par.ytilde = par.Y /(par.A_t * par.L_t)
-
-    "We make functions for the two steady state functions, to make them easier to evaluate"
-    def SteadyStatek_function(self):
-        par = self.par
-
-        # We get rid of the par. notation for easier readability
-        alpha,delta,phi,n,g,s_K,s_H = par.alpha ,par.delta,par.phi,par.n,par.g,par.s_K,par.s_H
-
-        # We define the seady state function
-        k_tilde = ((s_K**(1-phi) * s_H**phi)/(n+g+delta +n*g))**(1/(1-phi-alpha))
-
-        # We turn it in to a python function
-        kss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),k_tilde)
-
-        return  kss_function(alpha,phi,delta,n,g,s_K,s_H)
-
-    def SteadyStateh_funcion(self): 
-        par = self.par
-
-        # We get rid of the par. notation for easier readability
-        alpha,delta,phi,n,g,s_K,s_H = par.alpha ,par.delta,par.phi,par.n,par.g,par.s_K,par.s_H
-
-        # We define the steady state function
-        h_tilde = ( (s_K**(alpha) * s_H**(1-alpha))/(n+g+delta +n*g))**(1/(1-phi-alpha))
-
-        # We turn it in to a python function
-        hss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),h_tilde) 
-
-        return hss_function(alpha,phi,delta,n,g,s_K,s_H)
-
 
     "We now define all the function for the next period values, and then we update the current state"
 
@@ -162,7 +130,34 @@ class SolowModelClass:
     
         return 
 
-   
+    "We make functions for the two steady state functions, to make them easier to evaluate"
+    def SteadyStatek_function(self):
+        par = self.par
+
+        # We get rid of the par. notation for easier readability
+        alpha,delta,phi,n,g,s_K,s_H = par.alpha ,par.delta,par.phi,par.n,par.g,par.s_K,par.s_H
+
+        # We define the seady state function
+        k_tilde = ((s_K**(1-phi) * s_H**phi)/(n+g+delta +n*g))**(1/(1-phi-alpha))
+
+        # We turn it in to a python function
+        kss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),k_tilde)
+
+        return  kss_function(alpha,phi,delta,n,g,s_K,s_H)
+
+    def SteadyStateh_funcion(self): 
+        par = self.par
+
+        # We get rid of the par. notation for easier readability
+        alpha,delta,phi,n,g,s_K,s_H = par.alpha ,par.delta,par.phi,par.n,par.g,par.s_K,par.s_H
+
+        # We define the steady state function
+        h_tilde = ( (s_K**(alpha) * s_H**(1-alpha))/(n+g+delta +n*g))**(1/(1-phi-alpha))
+
+        # We turn it in to a python function
+        hss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),h_tilde) 
+
+        return hss_function(alpha,phi,delta,n,g,s_K,s_H)
 
    
 
