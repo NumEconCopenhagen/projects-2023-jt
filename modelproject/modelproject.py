@@ -251,7 +251,7 @@ class SimulationClass:
         return Anext
 
     # Setting up our simulation
-    def simulate(self, periods=100, interactive=False):
+    def simulate(self, periods=100, interactive=False, destroy_period=None):
         # Creating empty arrays
         Yvalues = np.zeros(periods)
         Kvalues = np.zeros(periods)
@@ -263,6 +263,7 @@ class SimulationClass:
         H = self.sim.H0
         L = self.sim.L0
         A = self.sim.A0
+        
 
         # Looping over our model equations
         for t in range(periods):
@@ -271,6 +272,8 @@ class SimulationClass:
             H = self.Hnextperiod(H, Y)
             L = self.Lnextperiod(L)
             A = self.Anextperiod(A)
+            if destroy_period is not None and t == destroy_period:
+                K *= 0.5  # Simulate half the capital being destroyed
 
             # Updating our arrays with the calculated values
             Yvalues[t] = Y
