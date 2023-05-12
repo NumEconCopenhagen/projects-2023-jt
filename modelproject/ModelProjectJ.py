@@ -160,16 +160,23 @@ class SolowModelClass:
 
     def Simulation(self,do_sim=True, do_print=True):
 
-        t= np.linspace(0,100,num=101,dtype=int)
-        if do_sim == True :
-            kt = []
-            for all t in t : 
+        par = self.par 
+        kt, s_K, y_tilde, delta, n,g = par.ktilde,par.s_K,par.y_tilde,par.delta,par.n,par.g
         
+        if do_sim == True: 
+            kt_0 = par.ktilde 
+            kt_list = [kt_0] 
+            for x in range(101):
+                if x == 0:
+                    kt = kt_0
+                else :
+                    kt = (s_K * y_tilde +(1-delta)*kt)/((1+n)(1+g))
 
+                kt_list.append(kt)
 
-
-
-        else:
+        if do_print == True: 
+            
+        return kt_list 
 
 
 
