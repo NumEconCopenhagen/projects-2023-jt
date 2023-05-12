@@ -107,7 +107,6 @@ class SolowModelClass:
         g = sm.symbols('g')
         n = sm.symbols('n')
         phi = sm.symbols('phi')
-
         y = k**alpha * h**phi
 
         # We define the function for which we are calculating the ss-value 
@@ -134,17 +133,30 @@ class SolowModelClass:
     
         return 
 
-    def SteadyStateFunctions(self,do_print=True):
+    def SteadyStateFunctions(alpha,phi,delta,n,g,s_K,s_H ,do_print=True):
 
-        par = self.sim 
+        par = self.sim
+        alpha = par.alpha
+        phi = par.phi
+        delta = par.delta
+        n = 
+        g= 0.016
+        s_K = 0.25
+        s_H = 0.129
 
-        k_tilde = ( (par.s_K**(1-par.phi) * par.s_H**par.phi)/(par.n+par.g+par.delta +par.n*par.g))^(1/(1-par.phi-par.alpha))
+        # We define the steady state functions
+        k_tilde = ((s_K**(1-phi) * s_H**phi)/(n+g+delta +n*g))**(1/(1-phi-alpha))
+        h_tilde = ( (s_K**(alpha) * s_H**(1-alpha))/(n+g+delta +n*g))**(1/(1-phi-alpha))
+        
+        # Now we turn them in to pyhton function, using sympy lambdify.
+        kss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),k_tilde)
+        hss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),h_tilde) 
 
-        h_tilde = ( (par.s_K**(par.alpha) * par.s_H**(1-par.alpha))/(par.n+par.g+par.delta +par.n*par.g))^(1/(1-par.phi-par.alpha))
-        kss_function = sm.lambdify((par.alpha,par.delta,par.s_K,par.s_H,par.g,par.n,par.phi),k_tilde)
-        hss_function = sm.lambdify((par.alpha,par.delta,par.s_K,par.s_H,par.g,par.n,par.phi),h_tilde) 
+        #Now we calculate the steady states
+        kss_function(alpha,phi,delta,n,g,s_K,s_H)
+        hss_function(alpha,phi,delta,n,g,s_K,s_H)
 
-        return kss_function and hss_function 
+        return 'The steady state for k is ', kss_function(alpha,phi,delta,n,g,s_K,s_H) ,'and the steady state for h is',  hss_function(alpha,phi,delta,n,g,s_K,s_H)
    
 
    
