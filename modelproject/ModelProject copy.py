@@ -27,18 +27,48 @@ class SolowModelClass:
         # We now define the variables
         par.L_t = 2             #current labour Force
 
-        par.ktilde = np.nan 
-        par.htilde = np.nan
+        par.ktilde = 1
+        par.htilde = 1
 
         par.alpha , par.phi , par.delta , par.n , par.g , par.s_K , par.s_H = sm.symbols('alpha') , sm.symbols('phi') , sm.symbols('delta') ,sm.symbols('n') , sm.symbols('g') ,sm.symbols('s_{K}') ,sm.symbols('s_{H}')   
 
         par.K_t = par.ktilde * (par.A_t * par.L_t)
         par.H_t = par.htilde * (par.A_t * par.L_t)
-        
+
         # We define the production function
-        par.Y = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi)
+        par.Y = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)**(1-par.alpha - par.phi)
         # We define the per effective worker production function
         par.ytilde = par.Y /(par.A_t * par.L_t)
+
+    "We make functions for the two steady state functions, to make them easier to evaluate"
+    def SteadyStatek_function(self):
+        par = self.par
+
+        # We get rid of the par. notation for easier readability
+        alpha,delta,phi,n,g,s_K,s_H = par.alpha ,par.delta,par.phi,par.n,par.g,par.s_K,par.s_H
+
+        # We define the seady state function
+        k_tilde = ((s_K**(1-phi) * s_H**phi)/(n+g+delta +n*g))**(1/(1-phi-alpha))
+
+        # We turn it in to a python function
+        kss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),k_tilde)
+
+        return  kss_function(alpha,phi,delta,n,g,s_K,s_H)
+
+    def SteadyStateh_funcion(self): 
+        par = self.par
+
+        # We get rid of the par. notation for easier readability
+        alpha,delta,phi,n,g,s_K,s_H = par.alpha ,par.delta,par.phi,par.n,par.g,par.s_K,par.s_H
+
+        # We define the steady state function
+        h_tilde = ( (s_K**(alpha) * s_H**(1-alpha))/(n+g+delta +n*g))**(1/(1-phi-alpha))
+
+        # We turn it in to a python function
+        hss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),h_tilde) 
+
+        return hss_function(alpha,phi,delta,n,g,s_K,s_H)
+
 
     "We now define all the function for the next period values, and then we update the current state"
 
@@ -94,40 +124,11 @@ class SolowModelClass:
 
         par.K_t = par.ktilde * (par.A_t * par.L_t)
         par.H_t = par.htilde * (par.A_t * par.L_t)
-        par.Y = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi))
+        par.Y = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi)
         # We compute the per effective worker production function
         par.ytilde = par.Y /(par.A_t * par.L_t)
 
-    "We make functions for the two steady state functions, to make them easier to evaluate"
-    def SteadyStatek_function(self):
-        par = self.par
-
-        # We get rid of the par. notation for easier readability
-        alpha,delta,phi,n,g,s_K,s_H = par.alpha ,par.delta,par.phi,par.n,par.g,par.s_K,par.s_H
-
-        # We define the seady state function
-        k_tilde = ((s_K**(1-phi) * s_H**phi)/(n+g+delta +n*g))**(1/(1-phi-alpha))
-
-        # We turn it in to a python function
-        kss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),k_tilde)
-
-        return  kss_function(alpha,phi,delta,n,g,s_K,s_H)
-
-    def SteadyStateh_funcion(self): 
-        par = self.par
-
-        # We get rid of the par. notation for easier readability
-        alpha,delta,phi,n,g,s_K,s_H = par.alpha ,par.delta,par.phi,par.n,par.g,par.s_K,par.s_H
-
-        # We define the steady state function
-        h_tilde = ( (s_K**(alpha) * s_H**(1-alpha))/(n+g+delta +n*g))**(1/(1-phi-alpha))
-
-        # We turn it in to a python function
-        hss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),h_tilde) 
-
-        return hss_function(alpha,phi,delta,n,g,s_K,s_H)
-
-
+    
     def SteadyStateValues(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
         "This function is only used to compute the steady states expressions"
         k = sm.symbols('k')
