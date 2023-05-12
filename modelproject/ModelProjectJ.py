@@ -95,7 +95,6 @@ class SolowModelClass:
         par.Y = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi)
         # We compute the per effective worker production function
         par.ytilde = par.Y /(par.A_t * par.L_t)
-
     
     def SteadyStateValues(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
         "This function is only used to compute the steady states expressions"
@@ -145,7 +144,7 @@ class SolowModelClass:
 
         return  kss_function(alpha,phi,delta,n,g,s_K,s_H)
 
-    def SteadyStateh_funcion(self): 
+    def SteadyStateh_function(self): 
         par = self.par
 
         # We get rid of the par. notation for easier readability
@@ -159,7 +158,19 @@ class SolowModelClass:
 
         return hss_function(alpha,phi,delta,n,g,s_K,s_H)
 
-   
+    def Simulation(self,do_sim=True, do_print=True):
+
+        t= np.linspace(0,100,num=101,dtype=int)
+        if do_sim == True :
+            kt = []
+            for all t in t : 
+        
+
+
+
+
+        else:
+
 
 
 def solve_ss(alpha, c):
