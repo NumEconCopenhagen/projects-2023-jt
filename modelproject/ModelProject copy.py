@@ -24,7 +24,7 @@ class SolowModelClass:
         par.s_H = 0.129         # Savings rate for human capital
         par.A_t = 1             # The technological devolopment
         
-        # We now define 
+        # We now define the variables
         par.L_t = 2             #current labour Force
 
         par.ktilde = np.nan 
@@ -34,6 +34,7 @@ class SolowModelClass:
 
         par.K_t = par.ktilde * (par.A_t * par.L_t)
         par.H_t = par.htilde * (par.A_t * par.L_t)
+        
         # We define the production function
         par.Y = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi)
         # We define the per effective worker production function
