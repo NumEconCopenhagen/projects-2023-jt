@@ -11,92 +11,85 @@ import ipywidgets
 
 class SolowModelClass:
     def __init__(self):
-        
-        # We create the namespaces: 
+   
         par = self.par = SimpleNamespace()
-        sim = self.sim = SimpleNamespace()
 
-        # We define our sim parameters, these will create the ground for our simulation.
-        sim.alpha = 0.333
-        sim.phi = 0.333
-        sim.delta = 0.02
-        sim.n = 0.014
-        sim.g = 0.016
-        sim.s_K = 0.25
-        sim.s_H = 0.129
-
-        # We name our parameters:
-        par.alpha = sm.symbols('alpha')
-        par.phi  = sm.symbols('phi') 
-        par.delta = sm.symbols('delta') 
-        par.n = sm.symbols('n') 
-        par.g = sm.symbols('g') 
-        par.s_K = sm.symbols('s_{K}') 
-        par.s_H = sm.symbols('s_{H}') 
-
-        # We name our variables
-
-        par.K_t = sm.symbols('K_{t}') 
-        par.K_t1 = sm.symbols('K_{t+1}')
-        par.H_t = sm.symbols('H_{t}')
-        par.H_t1 = sm.symbols('H_{t+1}')
-        par.Y_t = sm.symbols('Y_{t}')
-        par.A_t = sm.symbols('A_{t}')
-        par.A_t1 = sm.symbols('A_{t+1}')
-        par.L_t = sm.symbols('L_{t}')
-        par.L_t1 = sm.symbols('L_{t+1}')
-        par.r_t = sm.symbols('r_{t}')
-        par.w_t = sm.symbols('w_{t}')
+        #We start by setting our parameters
+        par.alpha = 1/3         # Share of capital
+        par.phi = 1/3           # 
+        par.delta = 0.02        # Depreciation rate
+        par.n = 0.014           # Population growth rate
+        par.g = 0.016           # Productivity
+        par.s_K = 0.25          # Savings rate for physical kapital
+        par.s_H = 0.129         # Savings rate for human capital
+        par.A_t = 1             # The technological devolopment, assumed constant
         
-        # We name our per effective worker variables
-        par.ktilde_t = sm.symbols('\tilde{k_{t}}')
-        par.ktilde_t1 = sm.symbols('\tilde{k}_{t+1}')
-        par.htilde_t = sm.symbols('\tilde{h_{t}}')
-        par.htilde_t1 = sm.symbols('\tilde{h}_{t+1}')
-        par.ytilde_t = sm.symbols('\tilde{y_{t}}')
+        par.L_t = 2             #current labour Force
+
+        par.ktilde = np.nan 
+        par.ktildenext = np.nan
+        par.htilde = np.nan
+        par.htildenext = np.nan
+
+        par.alpha , par.phi , par.delta , par.n , par.g , par.s_K , par.s_H = sm.symbols('alpha') , sm.symbols('phi') , sm.symbols('delta') ,sm.symbols('n') , sm.symbols('g') ,sm.symbols('s_{K}') ,sm.symbols('s_{H}')   
+
+        # We define the production function
+        par.Y = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi))
+        # We define the per effective worker production function
+        par.ytilde = par.Y /(par.A_t * par.L_t)
+
+        # We define the  
+
+    def next_period_physicalcapital(self):
+        " We are calculating it as per effective worker physical capital."
+        par = self.par
+        # We get get rid of the par. notation so simplify the notation
+        k_tildenext , n , g, s_K,y_tilde,delta,k_tilde = par.ktildenext , par.n,par.g,par.s_K,par.ytilde,par.delta,par.ktilde
+
+        # We define the function
+        k_next = (s_K * y_tilde + (1-delta)*k_tilde) / ((1+n)*(1+g))
+
+        # We turn it in to af python function
+        k_tildenext = sm.lambdify((n , g, s_K,y_tilde,delta,k_tilde),k_next)
+        
+        return k_tildenext(n , g, s_K,y_tilde,delta,k_tilde)
+
+    def next_period_humancapital(self):
+        " We are calculating it as per effective worker physical capital."
+        par = self.par
+        # We get get rid of the par. notation so simplify the notation
+        h_tildenext , n , g, s_H,y_tilde,delta,h_tilde = par.htildenext , par.n,par.g,par.s_H,par.ytilde,par.delta,par.htilde
+
+        # We define the function
+        h_next = (s_H * y_tilde + (1-delta)*h_tilde) / ((1+n)*(1+g))
+
+        # We turn it in to af python function
+        h_tildenext = sm.lambdify((n , g, s_H,y_tilde,delta,h_tilde),h_next)
+
+        return h_tildenext(n , g, s_H,y_tilde,delta,h_tilde)
+    
+    def next_period_labourforce(self):
+        "We are calculating the next period labour force"
+        par = self.par
+        # We get get rid of the par. notation so simplify the notation
+        L_t , n = par.L_t , par.n 
+
+        # We define the function
+        Lt_next = (1+n)*L_t 
+
+        # We turn it in to a python function
+        L_next = sm.lambdify((n,L_t),Lt_next)
+
+        return L_next(n,L_t)
+
+    def update(self):
+        "We are updating the curent states"
+        par = self.par
+
+        par.h
 
 
-    # we will define our functions as given by the book:
-    def ProductionFunction(self):
-        par = self.sim
-        Production = sm.Eq(par.Y_t,par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi))
 
-        return
-
-    def LabourSupply(self):
-        par = self.sim
-        Labor_supply = sm.Eq(par.L_t1,(1+par.n)*par.L_t )
-
-        return
-
-    def LabourProductivity(self):
-        par = self.sim
-        Productivity = sm.Eq(par.A_t1 , (1+ par.g)*par.A_t)
-
-        return
-
-    def RentalrateOfCapital(self):
-        par = self.sim
-        RentalRate = sm.Eq(par.r_t,par.alpha * (par.K_t/(par.A_t * par.L_t))^(par.alpha -1) * (par.H_t/(par.A_t * par.L_t))^par.phi)
-
-        return
-
-    def RealWageRate(self):
-        par = self.sim
-        WageRate = sm.Eq(par.w_t, par.alpha * (par.K_t/(par.A_t * par.L_t))^par.alpha * (par.H_t/(par.A_t * par.L_t))^par.phi * par.A_t)
-
-        return
-
-    def HumanCapitalAccumulation(self):
-        par = self.sim
-        HumanCapital = sm.Eq(par.H_t1 , par.s_H * par.Y_t + par.delta * par.H_t)
-
-        return
-
-    def PhysicalCapitalAccumulation(self):
-        par = self.sim
-        PhysicalCapital = sm.Eq(par.K_t1 , par.s_K * par.Y_t + par.delta * par.K_t)
- 
     def SteadyStateValues(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
         k = sm.symbols('k')
         h = sm.symbols('h')
