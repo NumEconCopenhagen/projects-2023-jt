@@ -14,7 +14,7 @@ class SolowModelClass:
    
         par = self.par = SimpleNamespace()
 
-        #We start by setting our parameters
+        #We start by setting our parameters (these are assumed constant)
         par.alpha = 1/3         # Share of capital
         par.phi = 1/3           # 
         par.delta = 0.02        # Depreciation rate
@@ -22,17 +22,18 @@ class SolowModelClass:
         par.g = 0.016           # Productivity
         par.s_K = 0.25          # Savings rate for physical kapital
         par.s_H = 0.129         # Savings rate for human capital
-        par.A_t = 1             # The technological devolopment, assumed constant
+        par.A_t = 1             # The technological devolopment
         
+        # We now define 
         par.L_t = 2             #current labour Force
 
         par.ktilde = np.nan 
-        par.ktildenext = np.nan
         par.htilde = np.nan
-        par.htildenext = np.nan
 
         par.alpha , par.phi , par.delta , par.n , par.g , par.s_K , par.s_H = sm.symbols('alpha') , sm.symbols('phi') , sm.symbols('delta') ,sm.symbols('n') , sm.symbols('g') ,sm.symbols('s_{K}') ,sm.symbols('s_{H}')   
 
+        par.K_t = par.ktilde * (par.A_t * par.L_t)
+        par.H_t = par.htilde * (par.A_t * par.L_t)
         # We define the production function
         par.Y = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi))
         # We define the per effective worker production function
@@ -44,7 +45,7 @@ class SolowModelClass:
         " We are calculating it as per effective worker physical capital."
         par = self.par
         # We get get rid of the par. notation so simplify the notation
-        k_tildenext , n , g, s_K,y_tilde,delta,k_tilde = par.ktildenext , par.n,par.g,par.s_K,par.ytilde,par.delta,par.ktilde
+        n , g, s_K,y_tilde,delta,k_tilde =  par.n,par.g,par.s_K,par.ytilde,par.delta,par.ktilde
 
         # We define the function
         k_next = (s_K * y_tilde + (1-delta)*k_tilde) / ((1+n)*(1+g))
@@ -58,7 +59,7 @@ class SolowModelClass:
         " We are calculating it as per effective worker physical capital."
         par = self.par
         # We get get rid of the par. notation so simplify the notation
-        h_tildenext , n , g, s_H,y_tilde,delta,h_tilde = par.htildenext , par.n,par.g,par.s_H,par.ytilde,par.delta,par.htilde
+        n , g, s_H,y_tilde,delta,h_tilde = par.n,par.g,par.s_H,par.ytilde,par.delta,par.htilde
 
         # We define the function
         h_next = (s_H * y_tilde + (1-delta)*h_tilde) / ((1+n)*(1+g))
@@ -86,7 +87,15 @@ class SolowModelClass:
         "We are updating the curent states"
         par = self.par
 
-        par.h
+        par.ktilde = self.next_period_physicalcapital()
+        par.htilde = self.next_period_humancapital()
+        par.L_t = self.next_period_labourforce()
+
+        par.K_t = par.ktilde * (par.A_t * par.L_t)
+        par.H_t = par.htilde * (par.A_t * par.L_t)
+        par.Y = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi))
+        # We compute the per effective worker production function
+        par.ytilde = par.Y /(par.A_t * par.L_t)
 
 
 
