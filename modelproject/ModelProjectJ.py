@@ -161,21 +161,28 @@ class SolowModelClass:
     def Simulation(self,do_sim=True, do_print=True):
 
         par = self.par 
-        kt, s_K, y_tilde, delta, n,g = par.ktilde,par.s_K,par.y_tilde,par.delta,par.n,par.g
+        ht, kt, s_K, y_tilde, delta, n,g = par.htilde, par.ktilde,par.s_K,par.y_tilde,par.delta,par.n,par.g
         
         if do_sim == True: 
-            kt_0 = par.ktilde 
+            kt_0 = kt
+            ht_0 = ht
             kt_list = [kt_0] 
+            ht_list = [ht_0]
             for x in range(101):
                 if x == 0:
                     kt = kt_0
+                    ht = ht_0
                 else :
                     kt = (s_K * y_tilde +(1-delta)*kt)/((1+n)(1+g))
-
+                    ht = (s_H * y_tilde +(1-delta)*ht)/((1+n)(1+g))
+                
                 kt_list.append(kt)
+                ht_list.append(ht)
 
         if do_print == True: 
+            solow_df = pd.DataFrame()
             
+
         return kt_list 
 
 
