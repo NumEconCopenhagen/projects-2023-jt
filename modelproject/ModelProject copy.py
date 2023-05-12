@@ -35,11 +35,11 @@ class SolowModelClass:
         par.K_t = par.ktilde * (par.A_t * par.L_t)
         par.H_t = par.htilde * (par.A_t * par.L_t)
         # We define the production function
-        par.Y = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi))
+        par.Y = par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi)
         # We define the per effective worker production function
         par.ytilde = par.Y /(par.A_t * par.L_t)
 
-        # We define the  
+    "We now define all the function for the next period values, and then we update the current state"
 
     def next_period_physicalcapital(self):
         " We are calculating it as per effective worker physical capital."
@@ -84,7 +84,7 @@ class SolowModelClass:
         return L_next(n,L_t)
 
     def update(self):
-        "We are updating the curent states"
+        "We are updating the current states"
         par = self.par
 
         par.ktilde = self.next_period_physicalcapital()
@@ -97,9 +97,38 @@ class SolowModelClass:
         # We compute the per effective worker production function
         par.ytilde = par.Y /(par.A_t * par.L_t)
 
+    "We make functions for the two steady state functions, to make them easier to evaluate"
+    def SteadyStatek_function(self):
+        par = self.par
+
+        # We get rid of the par. notation for easier readability
+        alpha,delta,phi,n,g,s_K,s_H = par.alpha ,par.delta,par.phi,par.n,par.g,par.s_K,par.s_H
+
+        # We define the seady state function
+        k_tilde = ((s_K**(1-phi) * s_H**phi)/(n+g+delta +n*g))**(1/(1-phi-alpha))
+
+        # We turn it in to a python function
+        kss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),k_tilde)
+
+        return  kss_function(alpha,phi,delta,n,g,s_K,s_H)
+
+    def SteadyStateh_funcion(self): 
+        par = self.par
+
+        # We get rid of the par. notation for easier readability
+        alpha,delta,phi,n,g,s_K,s_H = par.alpha ,par.delta,par.phi,par.n,par.g,par.s_K,par.s_H
+
+        # We define the steady state function
+        h_tilde = ( (s_K**(alpha) * s_H**(1-alpha))/(n+g+delta +n*g))**(1/(1-phi-alpha))
+
+        # We turn it in to a python function
+        hss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),h_tilde) 
+
+        return hss_function(alpha,phi,delta,n,g,s_K,s_H)
 
 
     def SteadyStateValues(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
+        "This function is only used to compute the steady states expressions"
         k = sm.symbols('k')
         h = sm.symbols('h')
         alpha = sm.symbols('alpha')
@@ -120,10 +149,6 @@ class SolowModelClass:
         ss_h = sm.Eq(h, 1/((1+n)*(1+g)) * ((s_H)*y+(1-delta)*h) ) 
         hss = sm.solve(ss_h,h)[0]
 
-        ## print('We now have these two values', 'k*=', kss , 'and h*=' , hss)
-
-        ## print('We now need to substitute to find the real steady state values')
-
         # We will now do the substitution for h in kss and solve for k
         k_ss = kss.subs(h,hss)
 
@@ -135,30 +160,6 @@ class SolowModelClass:
     
         return 
 
-    def SteadyStateFunctions(alpha,phi,delta,n,g,s_K,s_H ,do_print=True):
-
-        par = self.sim
-        alpha = par.alpha
-        phi = par.phi
-        delta = par.delta
-        n = 
-        g= 0.016
-        s_K = 0.25
-        s_H = 0.129
-
-        # We define the steady state functions
-        k_tilde = ((s_K**(1-phi) * s_H**phi)/(n+g+delta +n*g))**(1/(1-phi-alpha))
-        h_tilde = ( (s_K**(alpha) * s_H**(1-alpha))/(n+g+delta +n*g))**(1/(1-phi-alpha))
-        
-        # Now we turn them in to pyhton function, using sympy lambdify.
-        kss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),k_tilde)
-        hss_function = sm.lambdify((alpha,phi,delta,n,g,s_K,s_H),h_tilde) 
-
-        #Now we calculate the steady states
-        kss_function(alpha,phi,delta,n,g,s_K,s_H)
-        hss_function(alpha,phi,delta,n,g,s_K,s_H)
-
-        return 'The steady state for k is ', kss_function(alpha,phi,delta,n,g,s_K,s_H) ,'and the steady state for h is',  hss_function(alpha,phi,delta,n,g,s_K,s_H)
    
 
    
