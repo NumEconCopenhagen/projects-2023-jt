@@ -5,7 +5,7 @@ from scipy.optimize import fsolve
 from types import SimpleNamespace
 import pandas as pd 
 import matplotlib.pyplot as plt
-import ipywidgets 
+import ipywidgets as widgets
 
 
 class SolowModelClass:
@@ -203,16 +203,16 @@ class SolowModelClass:
         plt.legend()
         plt.show()
         
-class Simulation:
+class SimulationClass:
     def __init__(self):
         # Defining namespaces
         par = self.par = SimpleNamespace()
         sim = self.sim = SimpleNamespace()
 
         # Defining our sim parameters
-        sim.alpha = 0.333
-        sim.phi = 0.333
-        sim.delta = 0.05
+        sim.alpha = 1/3
+        sim.phi = 1/3
+        sim.delta = 0.02
         sim.n = 0.014
         sim.g = 0.016
         sim.s_K = 0.25
@@ -223,45 +223,39 @@ class Simulation:
         sim.H0 = 1
         sim.L0 = 1
         sim.A0 = 1
-        
+
     # Defining our production function for our simulation
-    
     def Productionfunction(self, K, H, A, L):
         sim = self.sim
         Yt = K**sim.alpha * H**sim.phi * (A * L)**(1 - sim.alpha - sim.phi)
         return Yt
 
     # Defining physical capital accumulation equation
-    
     def Knextperiod(self, K, Yt):
         sim = self.sim
         Knext = sim.s_K * Yt - sim.delta * K + K
         return Knext
 
     # Defining human capital accumulation equation
-    
     def Hnextperiod(self, H, Yt):
         sim = self.sim
         Hnext = sim.s_H * Yt - sim.delta * H + H
         return Hnext
 
-        #Defining our population growth
-        
+    # Defining our population growth
     def Lnextperiod(self, L):
         sim = self.sim
         Lnext = (1 + sim.n) * L
         return Lnext
-    
-    # Defining our technology growth
 
+    # Defining our technology growth
     def Anextperiod(self, A):
         sim = self.sim
         Anext = (1 + sim.g) * A
         return Anext
 
     # Setting up our simulation
-    def simulate(self, periods=100):
-        
+    def simulate(self, periods=100, interactive=False):
         # Creating empty arrays
         Yvalues = np.zeros(periods)
         Kvalues = np.zeros(periods)
@@ -289,28 +283,41 @@ class Simulation:
             Avalues[t] = A
             Lvalues[t] = L
 
-        # Calculating our tilde variables
-        
-        Y_per_capita = Yvalues / Lvalues
-        K_per_capita = Kvalues / Lvalues
-        H_per_capita = Hvalues / Lvalues
-
-        Ytilde = Y_per_capita / Avalues
-        Ktilde = K_per_capita / Avalues
-        Htilde = H_per_capita / Avalues
-        
         periods_range = range(periods)
 
-        # Setting up the plot
-        
-        plt.plot(periods_range, Ytilde, label='Ytilde')
-        plt.plot(periods_range, Ktilde, label='Ktilde')
-        plt.plot(periods_range, Htilde, label='Htilde')
-        plt.xlabel('Periods')
-        plt.ylabel('Level')
-        plt.title(f'Simulation of tilde variables for {periods} periods')
-        plt.legend()
-        plt.show()
+        if interactive:
+            # Create interactive sliders for s_K and s_H
+            s_K_slider = widgets.FloatSlider(value=self.sim.s_K, min=0.1, max=0.5, step=0.05, description='s_K')
+            s_H_slider = widgets.FloatSlider(value=self.sim.s_H, min=0.1, max=0.5, step=0.05, description='s_H')
 
-        #return Kvalues, Hvalues, Yvalues, Avalues, Lvalues, Y_per_capita, K_per_capita, H_per_capita, Ytilde, Ktilde, Htilde
+            # Create update function for the sliders
+            def update_simulation(s_K, s_H):
+                self.sim.s_K = s_K
+                self.sim.s_H = s_H
+                self.simulate(periods, interactive=False)
 
+            # Create interactive plot
+            interact_plot = widgets.interact(update_simulation, s_K=s_K_slider, s_H=s_H_slider)
+
+            # Display the interactive plot
+            display(interact_plot)
+        else:
+            # Calculate the tilde variables without interactive plot
+            Y_per_capita = Yvalues / Lvalues
+            K_per_capita = Kvalues / Lvalues
+            H_per_capita = Hvalues / Lvalues
+
+            Ytilde = Y_per_capita / Avalues
+            Ktilde = K_per_capita / Avalues
+            Htilde = H_per_capita / Avalues
+            
+            # Plotting
+            fig, ax = plt.subplots()
+            ax.plot(periods_range, Ytilde, label='Ytilde')
+            ax.plot(periods_range, Ktilde, label='Ktilde')
+            ax.plot(periods_range, Htilde, label='Htilde')
+            ax.set_xlabel('Periods')
+            ax.set_ylabel('Level')
+            ax.set_title(f'Simulation of tilde variables for {periods} periods')
+            ax.legend()
+            plt.show()

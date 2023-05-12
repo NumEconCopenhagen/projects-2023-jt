@@ -6,7 +6,9 @@ import sympy as sm
 
 import pandas as pd 
 import matplotlib.pyplot as plt
-import ipywidgets 
+import ipywidgets as widgets
+#from IPython.display import display
+
 
 
 class SolowModelClass:
@@ -197,6 +199,131 @@ class SolowModelClass:
                 if do_plot:
                     plt.plot(ktilde_steady_state, htilde_steady_state, 'ro', label='Steady State')
    
+class SimulationClass:
+    def __init__(self):
+        # Defining namespaces
+        par = self.par = SimpleNamespace()
+        sim = self.sim = SimpleNamespace()
+
+        # Defining our sim parameters
+        sim.alpha = 1/3
+        sim.phi = 1/3
+        sim.delta = 0.02
+        sim.n = 0.014
+        sim.g = 0.016
+        sim.s_K = 0.25
+        sim.s_H = 0.129
+
+        # Defining our starting values
+        sim.K0 = 1
+        sim.H0 = 1
+        sim.L0 = 1
+        sim.A0 = 1
+
+    # Defining our production function for our simulation
+    def Productionfunction(self, K, H, A, L):
+        sim = self.sim
+        Yt = K**sim.alpha * H**sim.phi * (A * L)**(1 - sim.alpha - sim.phi)
+        return Yt
+
+    # Defining physical capital accumulation equation
+    def Knextperiod(self, K, Yt):
+        sim = self.sim
+        Knext = sim.s_K * Yt - sim.delta * K + K
+        return Knext
+
+    # Defining human capital accumulation equation
+    def Hnextperiod(self, H, Yt):
+        sim = self.sim
+        Hnext = sim.s_H * Yt - sim.delta * H + H
+        return Hnext
+
+    # Defining our population growth
+    def Lnextperiod(self, L):
+        sim = self.sim
+        Lnext = (1 + sim.n) * L
+        return Lnext
+
+    # Defining our technology growth
+    def Anextperiod(self, A):
+        sim = self.sim
+        Anext = (1 + sim.g) * A
+        return Anext
+
+    # Setting up our simulation
+    def simulate(self, periods=100, interactive=False):
+        # Creating empty arrays
+        Yvalues = np.zeros(periods)
+        Kvalues = np.zeros(periods)
+        Hvalues = np.zeros(periods)
+        Avalues = np.zeros(periods)
+        Lvalues = np.zeros(periods)
+
+        K = self.sim.K0
+        H = self.sim.H0
+        L = self.sim.L0
+        A = self.sim.A0
+
+        # Looping over our model equations
+        for t in range(periods):
+            Y = self.Productionfunction(K, H, A, L)
+            K = self.Knextperiod(K, Y)
+            H = self.Hnextperiod(H, Y)
+            L = self.Lnextperiod(L)
+            A = self.Anextperiod(A)
+
+            # Updating our arrays with the calculated values
+            Yvalues[t] = Y
+            Kvalues[t] = K
+            Hvalues[t] = H
+            Avalues[t] = A
+            Lvalues[t] = L
+
+        periods_range = range(periods)
+
+        if interactive:
+            # Create interactive sliders for s_K and s_H
+            s_K_slider = widgets.FloatSlider(value=self.sim.s_K, min=0.1, max=0.5, step=0.05, description='s_K')
+            s_H_slider = widgets.FloatSlider(value=self.sim.s_H, min=0.1, max=0.5, step=0.05, description='s_H')
+
+            # Create update function for the sliders
+            def update_simulation(s_K, s_H):
+                self.sim.s_K = s_K
+                self.sim.s_H = s_H
+                self.simulate(periods, interactive=False)
+
+            # Create interactive plot
+            interact_plot = widgets.interact(update_simulation, s_K=s_K_slider, s_H=s_H_slider)
+
+            # Display the interactive plot
+            display(interact_plot)
+        else:
+            # Calculate the tilde variables without interactive plot
+            Y_per_capita = Yvalues / Lvalues
+            K_per_capita = Kvalues / Lvalues
+            H_per_capita = Hvalues / Lvalues
+
+            Ytilde = Y_per_capita / Avalues
+            Ktilde = K_per_capita / Avalues
+            Htilde = H_per_capita / Avalues
+            
+            # Plotting
+            fig, ax = plt.subplots()
+            ax.plot(periods_range, Ytilde, label='Ytilde')
+            ax.plot(periods_range, Ktilde, label='Ktilde')
+            ax.plot(periods_range, Htilde, label='Htilde')
+            ax.set_xlabel('Periods')
+            ax.set_ylabel('Level')
+            ax.set_title(f'Simulation of tilde variables for {periods} periods')
+            ax.legend()
+            plt.show()
+
+
+
+
+
+
+
 
 
 def solve_ss(alpha, c):
