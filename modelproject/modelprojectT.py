@@ -165,8 +165,83 @@ class SolowModelClass:
 
         return k_ss, h_ss
 
+    #def Nullclines(self, periods=100, do_sim=False):
+        par = self.par
+
+        if do_sim:
+            t = range(periods)
+            nchtvals = []
+            ncktvals = []
+
+            for i in t:
+                par.ktilde_t = i
+                ncht = sm.Eq(par.htilde_t, ((par.n + par.g + par.delta + par.n * par.g) / par.s_K) ** (1 / par.alpha) * par.ktilde_t ** ((1 - par.phi) / par.alpha))
+                nchtfun = sm.lambdify(par.htilde_t, ncht)
+                htildobj = nchtfun(i)
+                nchtvals.append(htildobj)
+
+            for i in t:
+                par.htilde_t = i
+                nckt = sm.Eq(par.ktilde_t, ((par.n + par.g + par.delta + par.n * par.g) / par.s_H) ** (1 / par.alpha) * par.htilde_t ** ((1 - par.alpha) / par.phi))
+                ncktfun = sm.lambdify(par.ktilde_t, nckt)
+                ktildobj = ncktfun(i)
+                ncktvals.append(ktildobj)
+
+            return nchtvals, ncktvals
+
+        else:
+            ncht = sm.Eq(par.htilde_t, ((par.n + par.g + par.delta + par.n * par.g) / par.s_K) ** (1 / par.alpha) * par.ktilde_t ** ((1 - par.phi) / par.alpha))
+            nckt = sm.Eq(par.ktilde_t, ((par.n + par.g + par.delta + par.n * par.g) / par.s_H) ** (1 / par.alpha) * par.htilde_t ** ((1 - par.alpha) / par.phi))
 
 
+            return ncht, nckt
+    def Nullclines(self, do_sim=False, do_plot=True, periods=100):
+        par = self.par
+        sim = self.sim
+        periods = periods
+
+        if do_sim == True:
+            # Create the lambdified functions
+            ncht_expr = ((par.n + par.g + par.delta + par.n * par.g) / par.s_K) ** (1 / par.alpha) * par.ktilde_t ** ((1 - par.phi) / par.alpha)
+            nckt_expr = ((par.n + par.g + par.delta + par.n * par.g) / par.s_H) ** (1 / par.alpha) * par.htilde_t ** ((1 - par.alpha) / par.phi)
+            ncht_func = sm.lambdify((par.ktilde_t,), ncht_expr.subs({par.alpha: sim.alpha, par.phi: sim.phi, par.delta: sim.delta, par.n: sim.n, par.g: sim.g, par.s_K: sim.s_K}))
+            nckt_func = sm.lambdify((par.htilde_t,), nckt_expr.subs({par.alpha: sim.alpha, par.phi: sim.phi, par.delta: sim.delta, par.n: sim.n, par.g: sim.g, par.s_H: sim.s_H}))
+
+            # Evaluate the functions for different t_values
+            ncht_vals = [ncht_func(ktilde_t) for ktilde_t in range(periods)]
+            nckt_vals = [nckt_func(htilde_t) for htilde_t in range(periods)]
+
+            if do_plot == True:
+                timeplot = range(periods)
+                plt.plot(timeplot, ncht_vals)
+                plt.plot(nckt_vals, timeplot)
+                plt.xlim(0, periods)
+                plt.ylim(0, periods)
+                plt.show()
+
+            return None
+        else:
+            ncht = sm.Eq(par.htilde_t, ((par.n + par.g + par.delta + par.n * par.g) / par.s_K) ** (1 / par.alpha) * par.ktilde_t ** ((1 - par.phi) / par.alpha))
+            nckt = sm.Eq(par.ktilde_t, ((par.n + par.g + par.delta + par.n * par.g) / par.s_H) ** (1 / par.alpha) * par.htilde_t ** ((1 - par.alpha) / par.phi))
+
+            if do_plot == True:
+                timeplot = range(periods)
+                plt.plot(timeplot, ncht)
+                plt.plot(nckt, timeplot)
+                plt.xlim(0, periods)
+                plt.ylim(0, periods)
+                plt.show()
+
+
+
+
+
+
+
+
+
+
+        
     def calculate_values(self, periods=10):
         sim = self.sim
         htilde_values = []
