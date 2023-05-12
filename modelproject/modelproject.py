@@ -139,7 +139,7 @@ class SolowModelClass:
         alpha = par.alpha
         phi = par.phi
         delta = par.delta
-        n = 
+        n = 0.014
         g= 0.016
         s_K = 0.25
         s_H = 0.129
