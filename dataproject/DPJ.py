@@ -20,17 +20,17 @@ class GDP_CapitaClass :
 
         df = eurostat.get_data_df('nama_10_gdp')
 
-        return df.head()
+        # We choose which rows that we want to see.
+            # we have chosen to see the gross domestic product in Chain linked volumes (2015), million euro. 
+        gdp = df[df['na_item'] == 'B1GQ']
+        gdp = gdp[gdp['unit']=='CLV15_MEUR']
+
+        return gdp.head()
     
     def Clean_GDP (self) : 
             
-        df = self.Get_GDP() 
-            
-        # We choose which rows that we want to see.
-            # we have chosen to se the gross domestic product in Chain linked volumes (2015), million euro. 
-        gdp = df[df['na_item'] == 'B1GQ']
-        gdp = gdp[gdp['unit']=='CLV15_MEUR']
-    
+        gdp = self.Get_GDP() 
+
         # We remove the columns freq, unit, na_item, and the years 1975-2011
         drop_these = ['freq' ,] + [str(i) for i in range(1975,2012,1)]
         gdp.drop(drop_these, axis=1, inplace=True)
@@ -47,7 +47,7 @@ class GDP_CapitaClass :
         # we are resetting the index
         gdp.reset_index(inplace = True, drop = True)
 
-        return 
+        return gdp.head()
     
 
     def Get_Population(self):
@@ -76,7 +76,7 @@ class GDP_CapitaClass :
 
         population.drop(columns=del_coloumns, axis=1, inplace=True) 
 
-        return 
+        return population.head()    
     
     def Merge_Data(self) :
         gdp = self.Clean_GDP()
@@ -90,7 +90,7 @@ class GDP_CapitaClass :
         # We will now merge the two datasets, by doing an inner join; meaning we choose the observations (countries) which are in both datasets. 
         inner = pd.merge(gdp_long, population_long, how = 'inner' , on = ['Country_code' , 'year'])
 
-        return 
+        return inner
 
     def Clean_merge(self) : 
         inner = self.Merge_Data()
