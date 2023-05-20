@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from scipy import optimize
 import numpy as np
 import sympy as sm
-
+from ipywidgets import interact
 import pandas as pd 
 import matplotlib.pyplot as plt
 import ipywidgets as widgets
@@ -198,6 +198,72 @@ class SolowModelClass:
 
                 if do_plot:
                     plt.plot(ktilde_steady_state, htilde_steady_state, 'ro', label='Steady State')
+                    
+    def Nullclines2(self, do_sim=False, do_plot=True, periods=500, steady_state=True):
+        par = self.par
+        sim = self.sim
+        periods = periods
+
+        # Define the interactive function
+        def plot_function(s_K, s_H, alpha_phi, delta, periods):
+            alpha = alpha_phi
+            phi = alpha_phi
+
+            # Create the lambdified functions with updated s_K, s_H, alpha, phi, and delta values
+            ncht_expr = (((par.n + par.g + delta + par.n * par.g) / s_K) ** (1 / phi)) * (par.ktilde_t ** ((1 - alpha) / phi))
+            nckt_expr = (s_H/(par.n+par.g+delta+par.n*par.g))**(1/(1-phi))*par.ktilde_t**(alpha/(1-alpha))
+            ncht_func = sm.lambdify(par.ktilde_t, ncht_expr.subs({par.alpha: alpha, par.phi: phi, par.delta: delta, par.n: sim.n, par.g: sim.g, par.s_K: s_K}))
+            nckt_func = sm.lambdify(par.ktilde_t, nckt_expr.subs({par.alpha: alpha, par.phi: phi, par.delta: delta, par.n: sim.n, par.g: sim.g, par.s_H: s_H}))
+
+            # Evaluate the functions for different t_values
+            ktilde_vals = np.linspace(0, periods-1, periods)
+            ncht_vals = ncht_func(ktilde_vals)
+            htilde_vals = np.linspace(0, periods-1, periods)
+            nckt_vals = nckt_func(htilde_vals)
+
+            # Create the plot
+            if do_plot:
+                plt.plot(ncht_vals, label="Δht=0")
+                plt.plot(nckt_vals, label="Δkt=0")
+                plt.xlim(0, periods-1)
+                plt.ylim(0, periods-1)
+                plt.xlabel('Level of physical capital')
+                plt.ylabel('Level of human capital')
+                plt.title('Phasediagram')
+
+            # Calculate and display steady state if enabled
+            if steady_state:
+                try:
+                    ktilde_expr = ((s_K**(1-phi) * s_H**phi)/(par.n + par.g + delta + par.n*par.g))**(1/(1-phi-alpha))
+                    htilde_expr = ((s_K**alpha * s_H**(1-alpha))/(par.n + par.g + delta + par.n*par.g))**(1/(1-phi-alpha))
+                    ktilde_func = sm.lambdify([], [ktilde_expr.subs({par.phi: phi, par.alpha: alpha, par.delta: delta, par.s_K: s_K, par.s_H: s_H, par.n: sim.n, par.g: sim.g})])
+                    htilde_func = sm.lambdify([], [htilde_expr.subs({par.phi: phi, par.alpha: alpha, par.delta: delta, par.s_K: s_K, par.s_H: s_H, par.n: sim.n, par.g: sim.g})])
+                    ktilde_steady_state = ktilde_func()[0]
+                    htilde_steady_state = htilde_func()[0]
+                    #print(f"ktilde in steady state: {ktilde_steady_state}, htilde in steady state: {htilde_steady_state}")
+                    if do_plot:
+                        plt.plot(ktilde_steady_state, htilde_steady_state, 'ro', label='Steady State')
+                except Exception as e:
+                    print(f"Error calculating steady state: {e}")
+
+            # Display the legend
+            if do_plot:
+                plt.legend()
+
+            # Show the plot
+            if do_plot:
+                plt.show()
+
+        # Create FloatSliders for s_K, s_H, alpha_phi, delta, and periods
+        s_K_slider = widgets.FloatSlider(min=0.01, max=1.0, step=0.01, value=0.25, description='s_K')
+        s_H_slider = widgets.FloatSlider(min=0.01, max=1.0, step=0.01, value=0.129, description='s_H')
+        alpha_phi_slider = widgets.FloatSlider(min=0.001, max=0.5, step=0.001, value=1/3, description='alpha/phi')
+        delta_slider = widgets.FloatSlider(min=0.001, max=0.1, step=0.001, value=0.02, description='delta')
+        periods_dropdown = widgets.Dropdown(options=list(range(100, 1001, 100)), value=100, description='periods')
+
+        # Call the interactive function with the sliders as arguments
+        widgets.interact(plot_function, s_K=s_K_slider, s_H=s_H_slider, alpha_phi=alpha_phi_slider, delta=delta_slider, periods=periods_dropdown)
+
    
 class SimulationClass:
     def __init__(self):
