@@ -50,6 +50,9 @@ for i in remove_these :
 # we are resetting the index
 gdp.reset_index(inplace = True, drop = True)
 
+
+
+
 # We are now downloading our data for the population of the different countries.
 # we name our parameters
 code = 'DEMO_PJAN'
@@ -76,6 +79,8 @@ gdp_long = pd.wide_to_long(gdp, stubnames= '', i= 'Country_code' , j= 'year')
 
 # We will now merge the two datasets, by doing an inner join; meaning we choose the observations (countries) which are in both datasets. 
 inner = pd.merge(gdp_long, population_long, how = 'inner' , on = ['Country_code' , 'year'])
+
+
 
 # We are now renaming our columns to the representative names
 inner.rename(columns={'_x': 'GDP', '_y':'Population'}, inplace=True)
