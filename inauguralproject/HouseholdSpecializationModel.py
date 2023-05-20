@@ -155,7 +155,7 @@ class HouseholdSpecializationModelClass:
 
         return opt  
     # Defining the method to solve for the wF vector
-    def solve_wF_vec(self, discrete=False, do_print=False, do_plot=False, compensation=False):
+    def solve_wF_vec(self, discrete=False, do_print=False, do_plot=False):
         
         par = self.par
         sol = self.sol
@@ -255,6 +255,8 @@ class HouseholdSpecializationModelClass:
             print(f"R-squared = {Rsqr:6.4f}")
             
         pass
+
+# Creating a new class for our extended model
 class HouseholdSpecializationModelClassExt:
 
     def __init__(self):
@@ -356,33 +358,37 @@ class HouseholdSpecializationModelClassExt:
         opt.HM = result.x[1]
         opt.LF = result.x[2]
         opt.HF = result.x[3]
-
-
-        # Print. 
-        if do_print:
-            for k,v in opt.__dict__.items():
-                print(f'{k} = {v:6.4f}')
     
 
         return opt  
     # Defining the method to solve for the wF vector
-    def solve_wF_vec(self, discrete=False):
+    def solve_wF_vec(self, do_plot=False):
         
         par = self.par
         sol = self.sol
         
         # Adding a continous solution
-        if discrete == False:
-            # Solving for wF_vec
-            for i, wF in enumerate(self.par.wF_vec):
-                # Set wF for this iteration
-                self.par.wF = wF
-                # Solve for optimal choices
-                opt = self.solve()
-                # Store results in solution arrays
-                sol.HM_vec[i] = opt.HM
-                sol.HF_vec[i] = opt.HF
-            pass
+        # Solving for wF_vec
+        for i, wF in enumerate(self.par.wF_vec):
+            # Set wF for this iteration
+            self.par.wF = wF
+            # Solve for optimal choices
+            opt = self.solve()
+            # Store results in solution arrays
+            sol.HM_vec[i] = opt.HM
+            sol.HF_vec[i] = opt.HF
+            
+        #Adding a scatterplot option
+        if do_plot:
+            x = np.log(par.wF_vec)
+            y = np.log(sol.HF_vec/sol.HM_vec)
+            plt.scatter(x,y)
+            slope, intercept = np.polyfit(x, y, 1)
+            plt.plot(x, slope * x + intercept, color='blue')
+            plt.xlabel("Log of wF")
+            plt.ylabel("Log of HF/HM")
+            plt.title("Scatter of log of wF and HF/HM")
+            plt.show()
             
     # Defining the regression method        
     def run_regression(self, print_beta=False):
@@ -394,9 +400,6 @@ class HouseholdSpecializationModelClassExt:
         # Finding the beta values
         A = np.vstack([np.ones(x.size), x]).T
         sol.beta0, sol.beta1 = np.linalg.lstsq(A, y, rcond=None)[0]
-        # Adding an option to print the beta values
-        if print_beta:
-            print(f"Beta0 = {sol.beta0}, Beta1 = {sol.beta1}")
             
     # Defining the method for estimating the optimal alpha and sigma values
     def estimate(self, sigma=None, do_print=False):
@@ -432,12 +435,9 @@ class HouseholdSpecializationModelClassExt:
             self.run_regression()
             Rsqr = (par.beta0_target - sol.beta0) ** 2 + (par.beta1_target - sol.beta1) ** 2
             print(f"alpha = {par.alpha:6.4f}")
-            print(f"epsilon_f = {par.epsilonf:6.4f}")
             print(f"sigma = {par.sigma:6.4f}")
+            print(f"epsilon_f = {par.epsilonf:6.4f}")
+            print(f"epsilon_m = {par.epsilonm:6.4f}")
             print(f"beta0 = {sol.beta0:6.4f}")
             print(f"beta1 = {sol.beta1:6.4f}")
             print(f"R-squared = {Rsqr:6.4f}")
-
-        #return par.epsilonf, par.sigma
-
-    
