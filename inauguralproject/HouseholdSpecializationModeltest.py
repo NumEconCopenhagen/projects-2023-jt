@@ -155,7 +155,7 @@ class HouseholdSpecializationModelClass:
 
         return opt  
     # Defining the method to solve for the wF vector
-    def solve_wF_vec(self, discrete=False, do_print=False, do_plot=False, compensation=False):
+    def solve_wF_vec(self, discrete=False, do_print=False, do_plot=False):
         
         par = self.par
         sol = self.sol
@@ -255,6 +255,8 @@ class HouseholdSpecializationModelClass:
             print(f"R-squared = {Rsqr:6.4f}")
             
         pass
+
+
 class HouseholdSpecializationModelClassExt:
 
     def __init__(self):
@@ -439,5 +441,3 @@ class HouseholdSpecializationModelClassExt:
             print(f"R-squared = {Rsqr:6.4f}")
 
         #return par.epsilonf, par.sigma
-
-    
