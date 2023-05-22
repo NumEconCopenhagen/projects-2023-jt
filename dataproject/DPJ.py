@@ -25,7 +25,7 @@ class GDP_CapitaClass :
         gdp = df[df['na_item'] == 'B1GQ']
         gdp = gdp[gdp['unit']=='CLV15_MEUR']
 
-        return gdp.head()
+        return gdp
     
     def Clean_GDP (self) : 
             
@@ -47,10 +47,10 @@ class GDP_CapitaClass :
         # we are resetting the index
         gdp.reset_index(inplace = True, drop = True)
 
-        return gdp.head()
+        return gdp
     
 
-    def Get_Population(self):
+    def Get_Population(self, do_print=False):
         
         code = 'DEMO_PJAN'
         pars = eurostat.get_pars(code)
@@ -61,10 +61,9 @@ class GDP_CapitaClass :
         my_filter_pars = {'startPeriod':2012,'endPeriod': 2022, 'sex': 'T', 'age':'TOTAL'}
         population = eurostat.get_data_df(code, filter_pars=my_filter_pars)
 
-      
-        return population.head()
+        return population    
     
-    def Clean_Population(self) :
+    def Clean_Population(self, do_print=False) :
          
         population = self.Get_Population()
 
@@ -76,7 +75,7 @@ class GDP_CapitaClass :
 
         population.drop(columns=del_coloumns, axis=1, inplace=True) 
 
-        return population.head()    
+        return population
     
     def Merge_Data(self) :
         gdp = self.Clean_GDP()
@@ -95,14 +94,14 @@ class GDP_CapitaClass :
     def Clean_merge(self) : 
         inner = self.Merge_Data()
 
-        # We are now resetting the index
-        inner.reset_index(inplace = True)
-
         # We are now renaming the columns
         inner.rename(columns={'_x':'GDP', '_y':'Population'}, inplace=True)
 
         # Dropping the countries that have Nan for all values of either GDP or population
         inner.dropna(inplace=True)
+        
+        # We are now resetting the index
+        inner.reset_index(inplace = True)
 
         # We are now creating a new column for GDP per capita, since GDP is in millions we multiply by 1.000.000
         inner["GDP/Cap"] = inner["GDP"]*1000000/inner["Population"]
