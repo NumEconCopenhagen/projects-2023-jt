@@ -108,3 +108,15 @@ class GDP_CapitaClass :
 
         return inner
     
+    def Merge_excel(self):
+        inner = self.Clean_merge()
+
+        # We are now merging the data with the excel file
+        df = pd.read_excel('C_Name_ISO3.xlsx')
+
+        # We are now merging the two datasets
+        merge = pd.merge(inner, df, how = 'inner', on = ['Country_code'])
+
+        # we will now reaarange the columns
+        merge = merge[[ 'Country_name','Country_code', 'ISO3', 'year', 'GDP', 'Population', 'GDP/Cap']]
+        return merge
