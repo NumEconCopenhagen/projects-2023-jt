@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import ipywidgets as widgets
 from matplotlib_venn import venn2
 import pandas_datareader.data as web
+import plotly.express as px
 
 # If you dont have the eurostat extension installed, it will be necessary to run the code below
 ## %pip install eurostat
@@ -104,7 +105,7 @@ class GDP_CapitaClass :
         inner.reset_index(inplace = True)
 
         # We are now creating a new column for GDP per capita, since GDP is in millions we multiply by 1.000.000
-        inner["GDP/Cap"] = inner["GDP"]*1000000/inner["Population"]
+        inner["GDP_Cap"] = inner["GDP"]*1000000/inner["Population"]
 
         return inner
     
@@ -118,5 +119,51 @@ class GDP_CapitaClass :
         merge = pd.merge(inner, df, how = 'inner', on = ['Country_code'])
 
         # we will now reaarange the columns
-        merge = merge[[ 'Country_name','Country_code', 'ISO3', 'year', 'GDP', 'Population', 'GDP/Cap']]
+        merge = merge[[ 'Country_Name','Country_code', 'ISO_3_Code', 'year', 'GDP', 'Population', 'GDP_Cap']]
+        
         return merge
+    
+    def plot_choropleth(self) : 
+        merge = self.Merge_excel()
+
+        # We will delete kosovo as it is not a country in the world bank data
+        merge = merge[merge['ISO_3_Code'] != 'XKX']
+        # We are now creating the choropleth map
+        fig = px.choropleth(merge, 
+                            locations='ISO_3_Code',
+                            color = 'GDP_Cap',
+                            scope = 'europe',
+                            hover_name='Country_Name',
+                            animation_frame='year')
+
+        return fig.show()
+    
+    def plot_line(self, Country_Name) :
+        merge = self.Merge_excel()
+
+        #We start by naming the axises and the title
+
+        I = merge['Country_Name'] == Country_Name  
+        # We are now setting the x-axis o show the years and the y-axis to show the GDP/Cap
+        ax = merge.loc[I,:].plot(x='year', y='GDP_Cap', style='-o', legend=False) 
+
+        # We are now setting the title and the labels
+        ax.set_title('GDP/Capita 2012-2022 for ' + Country_Name)
+        ax.set_ylabel('GDP/Capita in euros')
+        ax.set_xlabel('Year')
+        ax.set_xlim(merge['year'].min(), merge['year'].max())
+        ax.set_xticks(np.arange(merge['year'].min(), merge['year'].max()+1))
+
+        # Now we create the interactive plot
+
+        lineplot = widgets.interact(self.plot_line, 
+                         inner = widgets.fixed(merge), 
+                        Country_Name = widgets.Dropdown( name = 'Country_Name',
+                                                        options = merge['Country_Name'].unique(),
+                                                        value = 'Denmark'))
+
+        return lineplot
+
+    
+        
+    
