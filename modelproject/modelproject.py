@@ -351,7 +351,7 @@ class ExtensionClass:
     def __init__(self):
         pass
 
-    def steady_state(k,alpha,phi,delta,n,g,tau,s_K):
+    def steady_statek(k,alpha,phi,delta,n,g,tau,s_K):
         k = sm.symbols('k')
         h = sm.symbols('h')
         alpha = sm.symbols('alpha')
@@ -366,7 +366,7 @@ class ExtensionClass:
         # We define the two stedy state-functions:
         # during steady state k_t+1 = k_t = k and h_t+1 = h_t = h
         ss_k = sm.Eq(k, 1/((1+n)*(1+g))* (s_K* k**alpha * h**phi + (1-delta-tau)*k) )
-        ss_h = sm.Eq(h, 1/((1+n)*(1+g))* (s_H* k + (1-delta)*h) )
+        ss_h = sm.Eq(h, 1/((1+n)*(1+g))* (tau* k + (1-delta)*h) )
         # We solve the steady state functions for k and h, using sympy
         ss_k = sm.solve(ss_k,k)[0]
         ss_h = sm.solve(ss_h,h)[0]
@@ -375,7 +375,39 @@ class ExtensionClass:
         kss = ss_k.subs(h,ss_h)
         hss = ss_h.subs(k,ss_k)
 
-        return kss,hss 
+        # We will now print the steady state values for k and h'
+        #print('k_ss =  ', sm.latex(kss), 'and h_ss = ', sm.latex(hss))
+
+        return kss
+    
+    def steady_stateh(k,alpha,phi,delta,n,g,tau,s_K):
+        k = sm.symbols('k')
+        h = sm.symbols('h')
+        alpha = sm.symbols('alpha')
+        delta = sm.symbols('delta')
+        tau = sm.symbols('tau')
+        s_K = sm.symbols('s_K')
+        g = sm.symbols('g')
+        n = sm.symbols('n')
+        phi = sm.symbols('phi')
+        y = k**alpha * h**phi
+
+        # We define the two stedy state-functions:
+        # during steady state k_t+1 = k_t = k and h_t+1 = h_t = h
+        ss_k = sm.Eq(k, 1/((1+n)*(1+g))* (s_K* k**alpha * h**phi + (1-delta-tau)*k) )
+        ss_h = sm.Eq(h, 1/((1+n)*(1+g))* (tau* k + (1-delta)*h) )
+        # We solve the steady state functions for k and h, using sympy
+        ss_k = sm.solve(ss_k,k)[0]
+        ss_h = sm.solve(ss_h,h)[0]
+
+        # We will now do substitutions, to get the steady state values for k and h
+        kss = ss_k.subs(h,ss_h)
+        hss = ss_h.subs(k,ss_k)
+
+        # We will now print the steady state values for k and h'
+        #print('k_ss =  ', sm.latex(kss), 'and h_ss = ', sm.latex(hss))
+
+        return hss
     
     def ss_functions(alpha,phi,delta,n,g,tau,s_K) : 
 
