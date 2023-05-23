@@ -58,47 +58,6 @@ class SolowModelClass:
         par.ytilde_t = sm.symbols('\tilde{y_{t}}')
 
 
-    # we will define our functions as given by the book:
-    def ProductionFunction(self):
-        par = self.sim
-        Production = sm.Eq(par.Y_t,par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi))
-
-        return
-
-    def LabourSupply(self):
-        par = self.sim
-        Labor_supply = sm.Eq(par.L_t1,(1+par.n)*par.L_t )
-
-        return
-
-    def LabourProductivity(self):
-        par = self.sim
-        Productivity = sm.Eq(par.A_t1 , (1+ par.g)*par.A_t)
-
-        return
-
-    def RentalrateOfCapital(self):
-        par = self.sim
-        RentalRate = sm.Eq(par.r_t,par.alpha * (par.K_t/(par.A_t * par.L_t))^(par.alpha -1) * (par.H_t/(par.A_t * par.L_t))^par.phi)
-
-        return
-
-    def RealWageRate(self):
-        par = self.sim
-        WageRate = sm.Eq(par.w_t, par.alpha * (par.K_t/(par.A_t * par.L_t))^par.alpha * (par.H_t/(par.A_t * par.L_t))^par.phi * par.A_t)
-
-        return
-
-    def HumanCapitalAccumulation(self):
-        par = self.sim
-        HumanCapital = sm.Eq(par.H_t1 , par.s_H * par.Y_t + par.delta * par.H_t)
-
-        return
-
-    def PhysicalCapitalAccumulation(self):
-        par = self.sim
-        PhysicalCapital = sm.Eq(par.K_t1 , par.s_K * par.Y_t + par.delta * par.K_t)
- 
     def SteadyStateValues(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
         k = sm.symbols('k')
         h = sm.symbols('h')
@@ -131,8 +90,7 @@ class SolowModelClass:
         h_ss = hss.subs(k,kss)
 
         print('k_ss = ' , sm.latex(k_ss) ,'h_ss = ' , sm.latex(h_ss))
-        ##print ('We now have the steady State values for h and k' , k_ss , h_ss)
-    
+        
         return 
 
     def SteadyStateFunctions(alpha,phi,delta,n,g,s_K,s_H ,do_print=True):
@@ -388,6 +346,60 @@ class SimulationClass:
             plt.show()
 
 
+
+class ExtensionClass:
+    def __init__(self):
+        pass
+
+    def steady_state(k,alpha,phi,delta,n,g,tau,s_K):
+        k = sm.symbols('k')
+        h = sm.symbols('h')
+        alpha = sm.symbols('alpha')
+        delta = sm.symbols('delta')
+        tau = sm.symbols('tau')
+        s_K = sm.symbols('s_K')
+        g = sm.symbols('g')
+        n = sm.symbols('n')
+        phi = sm.symbols('phi')
+        y = k**alpha * h**phi
+
+        # We define the two stedy state-functions:
+        # during steady state k_t+1 = k_t = k and h_t+1 = h_t = h
+        ss_k = sm.Eq(k, 1/((1+n)*(1+g))* (s_K* k**alpha * h**phi + (1-delta-tau)*k) )
+        ss_h = sm.Eq(h, 1/((1+n)*(1+g))* (s_H* k + (1-delta)*h) )
+        # We solve the steady state functions for k and h, using sympy
+        ss_k = sm.solve(ss_k,k)[0]
+        ss_h = sm.solve(ss_h,h)[0]
+
+        # We will now do substitutions, to get the steady state values for k and h
+        kss = ss_k.subs(h,ss_h)
+        hss = ss_h.subs(k,ss_k)
+
+        return kss,hss 
+    
+    def ss_functions(alpha,phi,delta,n,g,tau,s_K) : 
+
+        alpha = 0.33
+        phi = 0.33
+        delta = 0.02
+        n = 0.014
+        g = 0.016
+        s_K = 0.25
+        tau = 0.2
+
+        # We define the two stedy state-functions:
+        k_tilde = (s_K / (delta + tau + n + g + n*g)**(1/(1-alpha-phi))) * (tau/(delta + n + g + n*g))**((phi)/(1-alpha-phi))
+        h_tilde = (s_K / (delta + tau + n + g + n*g)**(1/(1-alpha-phi))) * (tau/(delta + n + g + n*g))**((1-alpha)/(1-alpha-phi))
+
+        # now we turn them in to pyhton function, using sympy lambdify
+        kss_function = sm.lambdify((alpha,phi,delta,n,g,tau,s_K),k_tilde)
+        hss_function = sm.lambdify((alpha,phi,delta,n,g,tau,s_K),h_tilde)
+
+        # Now we call on the functions, to get the steady state values for k and h
+        kss_function(alpha,phi,delta,n,g,tau,s_K)
+        hss_function(alpha,phi,delta,n,g,tau,s_K)
+
+        return 'The Steady State value for k is',kss_function,'and the Steady State value for h is',hss_function
 
 
 
