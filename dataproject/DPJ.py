@@ -141,7 +141,7 @@ class GDP_CapitaClass :
     def plot_line(self, Country_Name) :
         merge = self.Merge_excel()
 
-        #We start by naming the axises and the title
+        #We start by creating the normal line plot
 
         I = merge['Country_Name'] == Country_Name
         # We are now setting the x-axis o show the years and the y-axis to show the GDP/Cap
@@ -159,7 +159,7 @@ class GDP_CapitaClass :
     def line_interactive(self) :
         merge = self.Merge_excel()
 
-        # Now we create the interactive plot
+        # Now we make the lineplot interactive
 
         line = widgets.interact(self.plot_line, 
                          inner = widgets.fixed(merge), 
@@ -171,6 +171,7 @@ class GDP_CapitaClass :
 
     def plot_scatter(self, year) : 
         merge = self.Merge_excel()
+        # We are now creating the scatterplot
 
         I = merge['year'] == year
         ax = merge.loc[I,:].plot(x='GDP_Cap', y='Population', style='o', legend=False)
@@ -182,9 +183,9 @@ class GDP_CapitaClass :
         return plt.show
     
     def scatter_interactive(self) :
-
         merge = self.Merge_excel()
-    
+
+        # Now we make the scatterplot interactive
         year_widget = widgets.Dropdown(options=merge['year'].unique(), value=2022, description='Year:')
         scatter = widgets.interact(self.plot_scatter, inner=widgets.fixed(merge), year=year_widget)
     
