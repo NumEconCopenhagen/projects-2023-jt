@@ -126,7 +126,7 @@ class GDP_CapitaClass :
     def plot_choropleth(self) : 
         merge = self.Merge_excel()
 
-        # We will delete kosovo as it is not a country in the world bank data
+        # We will delete kosovo as the ISO code is not available to use for the choropleth map
         merge = merge[merge['ISO_3_Code'] != 'XKX']
         # We are now creating the choropleth map
         fig = px.choropleth(merge, 
@@ -143,27 +143,51 @@ class GDP_CapitaClass :
 
         #We start by naming the axises and the title
 
-        I = merge['Country_Name'] == Country_Name  
+        I = merge['Country_Name'] == Country_Name
         # We are now setting the x-axis o show the years and the y-axis to show the GDP/Cap
         ax = merge.loc[I,:].plot(x='year', y='GDP_Cap', style='-o', legend=False) 
 
         # We are now setting the title and the labels
-        ax.set_title('GDP/Capita 2012-2022 for ' + Country_Name)
+        ax.set_title('GDP/Capita 2012-2022 for '+ Country_Name)
         ax.set_ylabel('GDP/Capita in euros')
         ax.set_xlabel('Year')
         ax.set_xlim(merge['year'].min(), merge['year'].max())
         ax.set_xticks(np.arange(merge['year'].min(), merge['year'].max()+1))
+        
+        return plt.show()
+
+    def line_interactive(self) :
+        merge = self.Merge_excel()
 
         # Now we create the interactive plot
 
-        lineplot = widgets.interact(self.plot_line, 
+        line = widgets.interact(self.plot_line, 
                          inner = widgets.fixed(merge), 
                         Country_Name = widgets.Dropdown( name = 'Country_Name',
                                                         options = merge['Country_Name'].unique(),
                                                         value = 'Denmark'))
 
-        return lineplot
+        return line     
 
+    def plot_scatter(self, year) : 
+        merge = self.Merge_excel()
+
+        I = merge['year'] == year
+        ax = merge.loc[I,:].plot(x='GDP_Cap', y='Population', style='o', legend=False)
+        ax.set_ylabel('Population in millions')
+        ax.set_xlabel('GDP per capita in euros')
+        ax.set_title(f"Scatterplot of GDP per capita and Population for {year}")
+        plt.subplots_adjust(left=0.2, right=1, top=0.9, bottom=0.1)
     
+        return plt.show
+    
+    def scatter_interactive(self) :
+
+        merge = self.Merge_excel()
+    
+        year_widget = widgets.Dropdown(options=merge['year'].unique(), value=2022, description='Year:')
+        scatter = widgets.interact(self.plot_scatter, inner=widgets.fixed(merge), year=year_widget)
+    
+        return scatter
         
     
