@@ -58,7 +58,7 @@ class SolowModelClass:
         par.ytilde_t = sm.symbols('\tilde{y_{t}}')
 
 
-    def SteadyStateValues(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
+    def SteadyStateValues_k(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
         k = sm.symbols('k')
         h = sm.symbols('h')
         alpha = sm.symbols('alpha')
@@ -89,9 +89,40 @@ class SolowModelClass:
         # now we do the substitution for k i hss and solve for h
         h_ss = hss.subs(k,kss)
 
-        print('k_ss = ' , sm.latex(k_ss) ,'h_ss = ' , sm.latex(h_ss))
-        
-        return 
+        return k_ss
+    
+    def SteadyStateValues_h(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
+        k = sm.symbols('k')
+        h = sm.symbols('h')
+        alpha = sm.symbols('alpha')
+        delta = sm.symbols('delta')
+        s_K = sm.symbols('s_K')
+        s_H = sm.symbols('s_H')
+        g = sm.symbols('g')
+        n = sm.symbols('n')
+        phi = sm.symbols('phi')
+        y = k**alpha * h**phi
+
+        # We define the function for which we are calculating the ss-value 
+        ss_k = sm.Eq(k, 1/((1+n)*(1+g))*((s_K)*y+(1-delta)*k)) 
+        # We find the steady state for k, by putting the lef hand side equal to 0
+        kss = sm.solve(ss_k,k)[0]
+                
+        # We will now do the same for h
+        ss_h = sm.Eq(h, 1/((1+n)*(1+g)) * ((s_H)*y+(1-delta)*h) ) 
+        hss = sm.solve(ss_h,h)[0]
+
+        ## print('We now have these two values', 'k*=', kss , 'and h*=' , hss)
+
+        ## print('We now need to substitute to find the real steady state values')
+
+        # We will now do the substitution for h in kss and solve for k
+        k_ss = kss.subs(h,hss)
+
+        # now we do the substitution for k i hss and solve for h
+        h_ss = hss.subs(k,kss)
+
+        return h_ss
 
     def SteadyStateFunctions(alpha,phi,delta,n,g,s_K,s_H ,do_print=True):
 
@@ -406,7 +437,7 @@ class ExtensionClass:
 
         # We will now print the steady state values for k and h'
         #print('k_ss =  ', sm.latex(kss), 'and h_ss = ', sm.latex(hss))
-
+ß
         return hss
     
     def ss_functions(alpha,phi,delta,n,g,tau,s_K) : 
@@ -420,7 +451,7 @@ class ExtensionClass:
         tau = 0.2
 
         # We define the two stedy state-functions:
-        k_tilde = (s_K / (delta + tau + n + g + n*g)**(1/(1-alpha-phi))) * (tau/(delta + n + g + n*g))**((phi)/(1-alpha-phi))
+        k_tilde = (s_K / (delta + tau + n + g + n*g)**(1/(1-alpha-phi))) * (tau/(delta + n + g + n*g))**(phi/(1-alpha-phi))
         h_tilde = (s_K / (delta + tau + n + g + n*g)**(1/(1-alpha-phi))) * (tau/(delta + n + g + n*g))**((1-alpha)/(1-alpha-phi))
 
         # now we turn them in to pyhton function, using sympy lambdify
@@ -428,10 +459,10 @@ class ExtensionClass:
         hss_function = sm.lambdify((alpha,phi,delta,n,g,tau,s_K),h_tilde)
 
         # Now we call on the functions, to get the steady state values for k and h
-        kss_function(alpha,phi,delta,n,g,tau,s_K)
-        hss_function(alpha,phi,delta,n,g,tau,s_K)
+        kss = kss_function(0.33,0.33,0.02,0.014,0.016,0.25,0.2)
+        hss = hssß_function(0.33,0.33,0.02,0.014,0.016,0.25,0.2)
 
-        return 'The Steady State value for k is',kss_function,'and the Steady State value for h is',hss_function
+        return 'The Steady State value for k is',kss,'and the Steady State value for h is',hss
 
 
 
