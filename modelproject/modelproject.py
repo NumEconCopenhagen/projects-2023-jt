@@ -437,7 +437,7 @@ class ExtensionClass:
 
         # We will now print the steady state values for k and h'
         #print('k_ss =  ', sm.latex(kss), 'and h_ss = ', sm.latex(hss))
-ß
+
         return hss
     
     def ss_functions(alpha,phi,delta,n,g,tau,s_K) : 
