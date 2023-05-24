@@ -15,10 +15,13 @@ import eurostat
 class GDP_CapitaClass : 
 
     def __init__(self):
-        pass
+        
+        GDP = pd.DataFrame()    
+        Population = pd.DataFrame()
+        Merge = pd.DataFrame()
 
     def Get_GDP(self):
-
+ 
         df = eurostat.get_data_df('nama_10_gdp')
 
         # We choose which rows that we want to see.
@@ -26,11 +29,12 @@ class GDP_CapitaClass :
         gdp = df[df['na_item'] == 'B1GQ']
         gdp = gdp[gdp['unit']=='CLV15_MEUR']
 
-        return gdp
+        self.GDP = gdp
+        return self.GDP
     
     def Clean_GDP (self) : 
             
-        gdp = self.Get_GDP() 
+        gdp = self.GDP 
 
         # We remove the columns freq, unit, na_item, and the years 1975-2011
         drop_these = ['freq' ,] + [str(i) for i in range(1975,2012,1)]
@@ -48,10 +52,11 @@ class GDP_CapitaClass :
         # we are resetting the index
         gdp.reset_index(inplace = True, drop = True)
 
-        return gdp
+        self.GDP = gdp
+        return self.GDP
     
 
-    def Get_Population(self, do_print=False):
+    def Get_Population(self):
         
         code = 'DEMO_PJAN'
         pars = eurostat.get_pars(code)
@@ -62,11 +67,12 @@ class GDP_CapitaClass :
         my_filter_pars = {'startPeriod':2012,'endPeriod': 2022, 'sex': 'T', 'age':'TOTAL'}
         population = eurostat.get_data_df(code, filter_pars=my_filter_pars)
 
-        return population    
+        self.Population = population
+        return self.Population    
     
-    def Clean_Population(self, do_print=False) :
+    def Clean_Population(self) :
          
-        population = self.Get_Population()
+        population = self.Population
 
         # We rename the column geo\TIME_PERIOD
         population.rename(columns={'geo\TIME_PERIOD': 'Country_code'}, inplace=True)
@@ -76,13 +82,14 @@ class GDP_CapitaClass :
 
         population.drop(columns=del_coloumns, axis=1, inplace=True) 
 
-        return population
+        self.Population = population
+        return self.Population
     
     def Merge_Data(self) :
-        gdp = self.Clean_GDP()
-        population = self.Clean_Population()
+        gdp = self.GDP
+        population = self.Population
 
-        # We are now chaning the direction of the two datasets, making them long rather than wide. 
+        # We are now changing the direction of the two datasets, making them long rather than wide. 
         population_long = pd.wide_to_long(population , stubnames='' , i= 'Country_code', j= 'year')
 
         gdp_long = pd.wide_to_long(gdp, stubnames= '', i= 'Country_code' , j= 'year')
@@ -90,10 +97,11 @@ class GDP_CapitaClass :
         # We will now merge the two datasets, by doing an inner join; meaning we choose the observations (countries) which are in both datasets. 
         inner = pd.merge(gdp_long, population_long, how = 'inner' , on = ['Country_code' , 'year'])
 
-        return inner
+        self.Merge = inner
+        return self.Merge
 
     def Clean_merge(self) : 
-        inner = self.Merge_Data()
+        inner = self.Merge
 
         # We are now renaming the columns
         inner.rename(columns={'_x':'GDP', '_y':'Population'}, inplace=True)
@@ -104,13 +112,15 @@ class GDP_CapitaClass :
         # We are now resetting the index
         inner.reset_index(inplace = True)
 
-        # We are now creating a new column for GDP per capita, since GDP is in millions we multiply by 1.000.000
-        inner["GDP_Cap"] = inner["GDP"]*1000000/inner["Population"]
+        # We are now creating a new column for GDP per capita, 
+        # since GDP is in millions we multiply by 1.000 to get it to be in thousand euros per capita
+        inner["GDP_Cap"] = (inner["GDP"]*1000)/inner["Population"]
 
-        return inner
+        self.Merge = inner
+        return self.Merge
     
     def Merge_excel(self):
-        inner = self.Clean_merge()
+        inner = self.Merge
 
         # We are now merging the data with the excel file
         df = pd.read_excel('C_Name_ISO3.xlsx')
@@ -121,10 +131,11 @@ class GDP_CapitaClass :
         # we will now reaarange the columns
         merge = merge[[ 'Country_Name','Country_code', 'ISO_3_Code', 'year', 'GDP', 'Population', 'GDP_Cap']]
         
-        return merge
+        self.Merge = merge
+        return self.Merge
     
     def plot_choropleth(self) : 
-        merge = self.Merge_excel()
+        merge = self.Merge
 
         # We will delete kosovo as the ISO code is not available to use for the choropleth map
         merge = merge[merge['ISO_3_Code'] != 'XKX']
@@ -139,7 +150,7 @@ class GDP_CapitaClass :
         return fig.show()
     
     def plot_line(self, Country_Name) :
-        merge = self.Merge_excel()
+        merge = self.Merge
 
         #We start by creating the normal line plot
 
@@ -157,7 +168,7 @@ class GDP_CapitaClass :
         return plt.show()
 
     def line_interactive(self) :
-        merge = self.Merge_excel()
+        merge = self.Merge
 
         # Now we make the lineplot interactive
 
@@ -170,7 +181,7 @@ class GDP_CapitaClass :
         return line     
 
     def plot_scatter(self, year) : 
-        merge = self.Merge_excel()
+        merge = self.Merge
         # We are now creating the scatterplot
 
         I = merge['year'] == year
@@ -183,7 +194,7 @@ class GDP_CapitaClass :
         return plt.show
     
     def scatter_interactive(self) :
-        merge = self.Merge_excel()
+        merge = self.Merge
 
         # Now we make the scatterplot interactive
         year_widget = widgets.Dropdown(options=merge['year'].unique(), value=2022, description='Year:')
