@@ -268,6 +268,8 @@ class SimulationClass:
         sim.g = 0.016
         sim.s_K = 0.25
         sim.s_H = 0.129
+        
+        # Using an if statement to vary between the regular model and extended model
         if enable_tax:
             sim.tau = 0.15
         else:
@@ -285,7 +287,8 @@ class SimulationClass:
         Yt = K**sim.alpha * H**sim.phi * (A * L)**(1 - sim.alpha - sim.phi)
         return Yt
 
-    # Defining physical capital accumulation equation
+    # Defining physical capital accumulation equation for both the regular and the extended model
+    # We use an if statement to distinguish between our regular and extended model, meaning that if our tau parameter is larger than zero, then we will switch to our extended model
     def Knextperiod(self, K, Yt):
         sim = self.sim
         if sim.tau > 0:
@@ -294,7 +297,7 @@ class SimulationClass:
             Knext = sim.s_K * Yt - sim.delta * K + K
         return Knext
 
-    # Defining human capital accumulation equation
+    # Defining human capital accumulation equation for both the regular and the extended model
     def Hnextperiod(self, H, Yt, K):
         sim = self.sim
         if sim.tau > 0:
@@ -324,6 +327,7 @@ class SimulationClass:
         Avalues = np.zeros(periods)
         Lvalues = np.zeros(periods)
 
+        # Assigning our starting values to our simulation variables
         K = self.sim.K0
         H = self.sim.H0
         L = self.sim.L0
@@ -336,8 +340,9 @@ class SimulationClass:
             H = self.Hnextperiod(H, Y, K)
             L = self.Lnextperiod(L)
             A = self.Anextperiod(A)
+            # Adding an if statement to simulate half the capital in the economy being destroyed
             if destroy_period is not None and t == destroy_period:
-                K *= 0.5  # Simulate half the capital being destroyed
+                K *= 0.5  
 
             # Updating our arrays with the calculated values
             Yvalues[t] = Y
@@ -345,9 +350,10 @@ class SimulationClass:
             Hvalues[t] = H
             Avalues[t] = A
             Lvalues[t] = L
-
+        # Defining our period range, that we use for our simulation
         periods_range = range(periods)
 
+        # Creating the interactive plot for both the extended and regular model
         if interactive:
             if self.sim.tau == 0:
                 self._create_s_H_plot(periods)
@@ -355,10 +361,12 @@ class SimulationClass:
                 self._create_tau_plot(periods)
         else:
             # Calculate the tilde variables without interactive plot
+            # First we define our per capita variables, by dividing by labor L
             Y_per_capita = Yvalues / Lvalues
             K_per_capita = Kvalues / Lvalues
             H_per_capita = Hvalues / Lvalues
 
+            # Next we define our tilde variables by dividing by technology A
             Ytilde = Y_per_capita / Avalues
             Ktilde = K_per_capita / Avalues
             Htilde = H_per_capita / Avalues
@@ -376,11 +384,12 @@ class SimulationClass:
                 ax.set_title(f'Simulation of tilde variables for {periods} periods in regular model')
             ax.legend()
             plt.show()
-
+    # Creating an interactive plot for the regular model with a savings rate in human capital
     def _create_s_H_plot(self, periods):
-        s_K_slider = widgets.FloatSlider(value=self.sim.s_K, min=0.1, max=0.5, step=0.05, description='s_K')
-        s_H_slider = widgets.FloatSlider(value=self.sim.s_H, min=0.1, max=0.5, step=0.05, description='s_H')
+        s_K_slider = widgets.FloatSlider(value=self.sim.s_K, min=0.01, max=0.5, step=0.01, description='s_K')
+        s_H_slider = widgets.FloatSlider(value=self.sim.s_H, min=0.01, max=0.5, step=0.01, description='s_H')
         
+        # Creating the update method for our plot
         def update_simulation(s_K, s_H):
             self.sim.s_K = s_K
             self.sim.s_H = s_H
@@ -388,11 +397,12 @@ class SimulationClass:
         
         interact_plot = widgets.interact(update_simulation, s_K=s_K_slider, s_H=s_H_slider)
         display(interact_plot)
-    
+    # Creating an interactive plot for the extended model with a tax rate on physical capital
     def _create_tau_plot(self, periods):
-        s_K_slider = widgets.FloatSlider(value=self.sim.s_K, min=0.1, max=0.5, step=0.05, description='s_K')
-        tau_slider = widgets.FloatSlider(value=self.sim.tau, min=0.01, max=0.5, step=0.05, description='tau')
+        s_K_slider = widgets.FloatSlider(value=self.sim.s_K, min=0.01, max=0.5, step=0.01, description='s_K')
+        tau_slider = widgets.FloatSlider(value=self.sim.tau, min=0.01, max=0.5, step=0.01, description='tau')
         
+        # Creating the update method for our plot
         def update_simulation(s_K, tau):
             self.sim.s_K = s_K
             self.sim.tau = tau
