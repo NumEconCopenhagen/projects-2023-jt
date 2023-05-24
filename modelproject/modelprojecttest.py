@@ -148,9 +148,9 @@ class SolowModelClass:
         hss_function(alpha,phi,delta,n,g,s_K,s_H)
 
         return 'The steady state for k is ', kss_function(alpha,phi,delta,n,g,s_K,s_H) ,'and the steady state for h is',  hss_function(alpha,phi,delta,n,g,s_K,s_H)
-   
-            
-    def Nullclines(self, do_plot=True, periods=500, steady_state=True):
+
+ 
+    def Nullclines(self, do_sim=False, do_plot=True, periods=500, steady_state=True):
         par = self.par
         sim = self.sim
         periods = periods
@@ -222,14 +222,13 @@ class SimulationClass:
         par = self.par = SimpleNamespace()
         sim = self.sim = SimpleNamespace()
 
-        # Defining our sim parameters
-        sim.alpha = 1/3
-        sim.phi = 1/3
-        sim.delta = 0.02
-        sim.n = 0.014
-        sim.g = 0.016
-        sim.s_K = 0.25
-        sim.s_H = 0.129
+        par.alpha = 0.333
+        par.phi = 0.333
+        par.delta = 0.02
+        par.n = 0.014
+        par.g = 0.016
+        par.s_K = 0.25
+        par.s_H = 0.129
         
         # Using an if statement to vary between the regular model and extended model
         if enable_tax:
@@ -377,7 +376,22 @@ class SimulationClass:
 
 class ExtensionClass:
     def __init__(self):
-        pass
+         # Defining namespaces
+        par = self.par = SimpleNamespace()
+        sim = self.sim = SimpleNamespace()
+        # We define our sim parameters, these will create the ground for our simulation.
+        par.alpha = 0.333
+        par.phi = 0.333
+        par.delta = 0.02
+        par.n = 0.014
+        par.g = 0.016
+        par.s_K = 0.25
+        par.tau = 0.129
+        
+        par.ktilde_t = sm.symbols('\tilde{k_{t}}')
+        par.htilde_t = sm.symbols('\tilde{h_{t}}')
+        par.ytilde_t = sm.symbols('\tilde{y_{t}}')
+
 
     def steady_statek(k,alpha,phi,delta,n,g,tau,s_K):
         k = sm.symbols('k')
@@ -448,33 +462,64 @@ class ExtensionClass:
         n = sm.symbols('n')
         phi = sm.symbols('phi')
         y = k**alpha * h**phi
-
-      
     
-   
+    def Nullclines(self, do_sim=False, do_plot=True, periods=500, steady_state=True):
+        par = self.par
+        sim = self.sim
+        periods = periods
 
+        # Define the interactive function
+        def plot_function(s_K, tau, alpha_phi, delta):
+            alpha = alpha_phi
+            phi = alpha_phi
 
+            # Create the lambdified functions with updated s_K, tau, alpha, phi, and delta values
+            hcht_expr = (((tau + par.n + par.g + delta + par.n * par.g) / s_K) ** (1 / phi)) * (par.ktilde_t ** ((1 - alpha) / phi))
+            hckt_expr = ((tau * par.ktilde_t)/(par.n+par.g+delta+par.n*par.g))
+            hcht_func = sm.lambdify(par.ktilde_t, hcht_expr.subs({par.alpha: alpha, par.phi: phi, par.delta: delta, par.n: par.n, par.g: par.g, par.s_K: s_K, par.tau: tau}))
+            hckt_func = sm.lambdify(par.ktilde_t, hckt_expr.subs({par.alpha: alpha, par.phi: phi, par.delta: delta, par.n: par.n, par.g: par.g, par.s_K: s_K, par.tau: tau}))
 
+            # Evaluate the functions for different t_values
+            ktilde_vals = np.linspace(0, periods-1, periods)
+            hcht_vals = hcht_func(ktilde_vals)
+            htilde_vals = np.linspace(0, periods-1, periods)
+            hckt_vals = hckt_func(htilde_vals)
 
+            # Create the plot
+            plt.figure()
+            plt.plot(hcht_vals, label="Δht=0")
+            plt.plot(hckt_vals, label="Δkt=0")
+            plt.xlim(0, periods-1)
+            plt.ylim(0, periods-1)
+            plt.xlabel('Level of physical capital')
+            plt.ylabel('Level of human capital')
+            plt.title('Phasediagram')
 
+            # Calculate and display steady state if enabled
+            if steady_state:
+                try:
+                    k_tilde_expr = (s_K / (delta + tau + par.n + par.g + par.n*par.g))**(1/(1-alpha-phi)) * (tau/(delta + par.n + par.g + par.n*par.g))**((phi)/(1-alpha-phi))
+                    h_tilde_expr = (s_K / (delta + tau + par.n + par.g + par.n*par.g))**(1/(1-alpha-phi)) * (tau/(delta + par.n + par.g + par.n*par.g))**((1-alpha)/(1-alpha-phi))
+                    kss_func = sm.lambdify([], [k_tilde_expr.subs({par.alpha: alpha, par.phi: phi, par.delta: delta, par.n: sim.n, par.g: sim.g, par.s_K: s_K, par.tau: tau})])
+                    hss_func = sm.lambdify([], [h_tilde_expr.subs({par.alpha: alpha, par.phi: phi, par.delta: delta, par.n: sim.n, par.g: sim.g, par.s_K: s_K, par.tau: tau})])
+                    ktilde_steady_state = kss_func()[0]
+                    htilde_steady_state = hss_func()[0]
+                    plt.plot(ktilde_steady_state, htilde_steady_state, 'ro', label='Steady State')
+                except Exception as e:
+                    print(f"Error calculating steady state: {e}")
 
-def solve_ss(alpha, c):
-    """ Example function. Solve for steady state k. 
+            # Display the legend
+            plt.legend()
 
-    Args:
-        c (float): costs
-        alpha (float): parameter
+            # Show the plot
+            plt.show()
 
-    Returns:
-        result (RootResults): the solution represented as a RootResults object.
-
-    """ 
-    
-    # a. Objective function, depends on k (endogenous) and c (exogenous).
-    f = lambda k: k**alpha - c
-    obj = lambda kss: kss - f(kss)
-
-    #. b. call root finder to find kss.
-    result = optimize.root_scalar(obj,bracket=[0.1,100],method='bisect')
-    
-    return result
+        # Create the interactive plot
+        interactive_plot = widgets.interact(
+            plot_function,
+            s_K=widgets.FloatSlider(min=0.01, max=0.5, step=0.01, value=0.2),
+            tau=widgets.FloatSlider(min=0.01, max=0.5, step=0.01, value=0.2),
+            alpha_phi=widgets.FloatSlider(min=0.01, max=0.5, step=0.01, value=1/3),
+            delta=widgets.FloatSlider(min=0.01, max=0.2, step=0.01, value=0.02)
+        )
+        display(interactive_plot)
