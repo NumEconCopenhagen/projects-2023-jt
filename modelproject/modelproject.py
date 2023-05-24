@@ -255,7 +255,7 @@ class SolowModelClass:
 
    
 class SimulationClass:
-    def __init__(self):
+    def __init__(self, enable_tax=False):
         # Defining namespaces
         par = self.par = SimpleNamespace()
         sim = self.sim = SimpleNamespace()
@@ -268,7 +268,11 @@ class SimulationClass:
         sim.g = 0.016
         sim.s_K = 0.25
         sim.s_H = 0.129
-
+        if enable_tax:
+            sim.tau = 0.15
+        else:
+            sim.tau = 0
+            
         # Defining our starting values
         sim.K0 = 1
         sim.H0 = 1
@@ -284,13 +288,19 @@ class SimulationClass:
     # Defining physical capital accumulation equation
     def Knextperiod(self, K, Yt):
         sim = self.sim
-        Knext = sim.s_K * Yt - sim.delta * K + K
+        if sim.tau > 0:
+            Knext = sim.s_K * Yt + (1 - sim.delta - sim.tau) * K
+        else:
+            Knext = sim.s_K * Yt - sim.delta * K + K
         return Knext
 
     # Defining human capital accumulation equation
-    def Hnextperiod(self, H, Yt):
+    def Hnextperiod(self, H, Yt, K):
         sim = self.sim
-        Hnext = sim.s_H * Yt - sim.delta * H + H
+        if sim.tau > 0:
+            Hnext = sim.tau * K + (1 - sim.delta) * H
+        else:
+            Hnext = sim.s_H * Yt - sim.delta * H + H
         return Hnext
 
     # Defining our population growth
@@ -318,13 +328,12 @@ class SimulationClass:
         H = self.sim.H0
         L = self.sim.L0
         A = self.sim.A0
-        
 
         # Looping over our model equations
         for t in range(periods):
             Y = self.Productionfunction(K, H, A, L)
             K = self.Knextperiod(K, Y)
-            H = self.Hnextperiod(H, Y)
+            H = self.Hnextperiod(H, Y, K)
             L = self.Lnextperiod(L)
             A = self.Anextperiod(A)
             if destroy_period is not None and t == destroy_period:
@@ -340,21 +349,10 @@ class SimulationClass:
         periods_range = range(periods)
 
         if interactive:
-            # Create interactive sliders for s_K and s_H
-            s_K_slider = widgets.FloatSlider(value=self.sim.s_K, min=0.1, max=0.5, step=0.05, description='s_K')
-            s_H_slider = widgets.FloatSlider(value=self.sim.s_H, min=0.1, max=0.5, step=0.05, description='s_H')
-
-            # Create update function for the sliders
-            def update_simulation(s_K, s_H):
-                self.sim.s_K = s_K
-                self.sim.s_H = s_H
-                self.simulate(periods, interactive=False)
-
-            # Create interactive plot
-            interact_plot = widgets.interact(update_simulation, s_K=s_K_slider, s_H=s_H_slider)
-
-            # Display the interactive plot
-            display(interact_plot)
+            if self.sim.tau == 0:
+                self._create_s_H_plot(periods)
+            else:
+                self._create_tau_plot(periods)
         else:
             # Calculate the tilde variables without interactive plot
             Y_per_capita = Yvalues / Lvalues
@@ -364,7 +362,7 @@ class SimulationClass:
             Ytilde = Y_per_capita / Avalues
             Ktilde = K_per_capita / Avalues
             Htilde = H_per_capita / Avalues
-            
+
             # Plotting
             fig, ax = plt.subplots()
             ax.plot(periods_range, Ytilde, label='Ytilde')
@@ -372,9 +370,36 @@ class SimulationClass:
             ax.plot(periods_range, Htilde, label='Htilde')
             ax.set_xlabel('Periods')
             ax.set_ylabel('Level')
-            ax.set_title(f'Simulation of tilde variables for {periods} periods')
+            if self.sim.tau > 0:
+                ax.set_title(f'Simulation of tilde variables for {periods} periods in extended model')
+            else:
+                ax.set_title(f'Simulation of tilde variables for {periods} periods in regular model')
             ax.legend()
             plt.show()
+
+    def _create_s_H_plot(self, periods):
+        s_K_slider = widgets.FloatSlider(value=self.sim.s_K, min=0.1, max=0.5, step=0.05, description='s_K')
+        s_H_slider = widgets.FloatSlider(value=self.sim.s_H, min=0.1, max=0.5, step=0.05, description='s_H')
+        
+        def update_simulation(s_K, s_H):
+            self.sim.s_K = s_K
+            self.sim.s_H = s_H
+            self.simulate(periods, interactive=False)
+        
+        interact_plot = widgets.interact(update_simulation, s_K=s_K_slider, s_H=s_H_slider)
+        display(interact_plot)
+    
+    def _create_tau_plot(self, periods):
+        s_K_slider = widgets.FloatSlider(value=self.sim.s_K, min=0.1, max=0.5, step=0.05, description='s_K')
+        tau_slider = widgets.FloatSlider(value=self.sim.tau, min=0.01, max=0.5, step=0.05, description='tau')
+        
+        def update_simulation(s_K, tau):
+            self.sim.s_K = s_K
+            self.sim.tau = tau
+            self.simulate(periods, interactive=False)
+        
+        interact_plot = widgets.interact(update_simulation, s_K=s_K_slider, tau=tau_slider)
+        display(interact_plot)
 
 
 
@@ -440,30 +465,21 @@ class ExtensionClass:
 
         return hss
     
-    def ss_functions(alpha,phi,delta,n,g,tau,s_K) : 
+    def simulate_tranisition(k,alpha,phi,delta,n,g,tau,s_K):
+        k = sm.symbols('k')
+        h = sm.symbols('h')
+        alpha = sm.symbols('alpha')
+        delta = sm.symbols('delta')
+        tau = sm.symbols('tau')
+        s_K = sm.symbols('s_K')
+        g = sm.symbols('g')
+        n = sm.symbols('n')
+        phi = sm.symbols('phi')
+        y = k**alpha * h**phi
 
-        alpha = 0.33
-        phi = 0.33
-        delta = 0.02
-        n = 0.014
-        g = 0.016
-        s_K = 0.25
-        tau = 0.2
-
-        # We define the two stedy state-functions:
-        k_tilde = (s_K / (delta + tau + n + g + n*g)**(1/(1-alpha-phi))) * (tau/(delta + n + g + n*g))**(phi/(1-alpha-phi))
-        h_tilde = (s_K / (delta + tau + n + g + n*g)**(1/(1-alpha-phi))) * (tau/(delta + n + g + n*g))**((1-alpha)/(1-alpha-phi))
-
-        # now we turn them in to pyhton function, using sympy lambdify
-        kss_function = sm.lambdify((alpha,phi,delta,n,g,tau,s_K),k_tilde)
-        hss_function = sm.lambdify((alpha,phi,delta,n,g,tau,s_K),h_tilde)
-
-        # Now we call on the functions, to get the steady state values for k and h
-        kss = kss_function(0.33,0.33,0.02,0.014,0.016,0.25,0.2)
-        hss = hssß_function(0.33,0.33,0.02,0.014,0.016,0.25,0.2)
-
-        return 'The Steady State value for k is',kss,'and the Steady State value for h is',hss
-
+      
+    
+   
 
 
 
