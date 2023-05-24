@@ -22,6 +22,7 @@ class GDP_CapitaClass :
 
     def Get_GDP(self):
  
+        # We access the data from eurostat
         df = eurostat.get_data_df('nama_10_gdp')
 
         # We choose which rows that we want to see.
@@ -29,6 +30,9 @@ class GDP_CapitaClass :
         gdp = df[df['na_item'] == 'B1GQ']
         gdp = gdp[gdp['unit']=='CLV15_MEUR']
 
+        # We add the data top the initilized empty dataframe store the data
+        # this is done to make it easier, and faster, to work with the data
+        # without having to access the data source everytime we want to use the data
         self.GDP = gdp
         return 
     
@@ -52,6 +56,7 @@ class GDP_CapitaClass :
         # we are resetting the index
         gdp.reset_index(inplace = True, drop = True)
 
+        # We update the data in the class
         self.GDP = gdp
         return 
     
@@ -67,6 +72,7 @@ class GDP_CapitaClass :
         my_filter_pars = {'startPeriod':2012,'endPeriod': 2022, 'sex': 'T', 'age':'TOTAL'}
         population = eurostat.get_data_df(code, filter_pars=my_filter_pars)
 
+        # We add the data to the initilized empty dataframe to store the data
         self.Population = population
         return  
     
@@ -82,6 +88,7 @@ class GDP_CapitaClass :
 
         population.drop(columns=del_coloumns, axis=1, inplace=True) 
 
+        # We update the data in the class
         self.Population = population
         return 
     
@@ -97,6 +104,7 @@ class GDP_CapitaClass :
         # We will now merge the two datasets, by doing an inner join; meaning we choose the observations (countries) which are in both datasets. 
         inner = pd.merge(gdp_long, population_long, how = 'inner' , on = ['Country_code' , 'year'])
 
+        # We add the data to the initilized empty dataframe to store the data
         self.Merge = inner
         return 
 
@@ -116,6 +124,7 @@ class GDP_CapitaClass :
         # since GDP is in millions we multiply by 1.000 to get it to be in thousand euros per capita
         inner["GDP_Cap"] = (inner["GDP"]*1000)/inner["Population"]
 
+        # We update the data in the class
         self.Merge = inner
         return 
     
@@ -131,8 +140,9 @@ class GDP_CapitaClass :
         # we will now reaarange the columns
         merge = merge[[ 'Country_Name','Country_code', 'ISO_3_Code', 'year', 'GDP', 'Population', 'GDP_Cap']]
         
+        # We update the data in the class
         self.Merge = merge
-        return 
+        return self.Merge
     
     def plot_choropleth(self) : 
         merge = self.Merge
@@ -160,7 +170,7 @@ class GDP_CapitaClass :
 
         # We are now setting the title and the labels
         ax.set_title('GDP/Capita 2012-2022 for '+ Country_Name)
-        ax.set_ylabel('GDP/Capita in euros')
+        ax.set_ylabel('GDP/Capita in thousand euros')
         ax.set_xlabel('Year')
         ax.set_xlim(merge['year'].min(), merge['year'].max())
         ax.set_xticks(np.arange(merge['year'].min(), merge['year'].max()+1))
@@ -186,8 +196,8 @@ class GDP_CapitaClass :
 
         I = merge['year'] == year
         ax = merge.loc[I,:].plot(x='GDP_Cap', y='Population', style='o', legend=False)
-        ax.set_ylabel('Population in millions')
-        ax.set_xlabel('GDP per capita in euros')
+        ax.set_ylabel('Total population')
+        ax.set_xlabel('GDP per capita in thousand euros')
         ax.set_title(f"Scatterplot of GDP per capita and Population for {year}")
         plt.subplots_adjust(left=0.2, right=1, top=0.9, bottom=0.1)
     
