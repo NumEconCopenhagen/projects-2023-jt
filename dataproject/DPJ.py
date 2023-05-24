@@ -197,7 +197,7 @@ class GDP_CapitaClass :
         merge = self.Merge
 
         # Now we make the scatterplot interactive
-        year_widget = widgets.Dropdown(options=merge['year'].unique(), value=2022, description='Year:')
+        year_widget = widgets.IntSlider(min=merge['year'].min(), max=merge['year'].max(), step=1, value=2012)
         scatter = widgets.interact(self.plot_scatter, inner=widgets.fixed(merge), year=year_widget)
     
         return scatter
