@@ -30,7 +30,7 @@ class GDP_CapitaClass :
         gdp = gdp[gdp['unit']=='CLV15_MEUR']
 
         self.GDP = gdp
-        return self.GDP
+        return 
     
     def Clean_GDP (self) : 
             
@@ -53,7 +53,7 @@ class GDP_CapitaClass :
         gdp.reset_index(inplace = True, drop = True)
 
         self.GDP = gdp
-        return self.GDP
+        return 
     
 
     def Get_Population(self):
@@ -68,7 +68,7 @@ class GDP_CapitaClass :
         population = eurostat.get_data_df(code, filter_pars=my_filter_pars)
 
         self.Population = population
-        return self.Population    
+        return  
     
     def Clean_Population(self) :
          
@@ -83,7 +83,7 @@ class GDP_CapitaClass :
         population.drop(columns=del_coloumns, axis=1, inplace=True) 
 
         self.Population = population
-        return self.Population
+        return 
     
     def Merge_Data(self) :
         gdp = self.GDP
@@ -98,7 +98,7 @@ class GDP_CapitaClass :
         inner = pd.merge(gdp_long, population_long, how = 'inner' , on = ['Country_code' , 'year'])
 
         self.Merge = inner
-        return self.Merge
+        return 
 
     def Clean_merge(self) : 
         inner = self.Merge
@@ -117,7 +117,7 @@ class GDP_CapitaClass :
         inner["GDP_Cap"] = (inner["GDP"]*1000)/inner["Population"]
 
         self.Merge = inner
-        return self.Merge
+        return 
     
     def Merge_excel(self):
         inner = self.Merge
@@ -132,7 +132,7 @@ class GDP_CapitaClass :
         merge = merge[[ 'Country_Name','Country_code', 'ISO_3_Code', 'year', 'GDP', 'Population', 'GDP_Cap']]
         
         self.Merge = merge
-        return self.Merge
+        return 
     
     def plot_choropleth(self) : 
         merge = self.Merge
