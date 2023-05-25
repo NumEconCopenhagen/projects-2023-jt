@@ -472,12 +472,12 @@ class ExtensionClass:
         def plot_function(s_K, tau, alpha_phi, delta):
             alpha = alpha_phi
             phi = alpha_phi
-
+            par = self.par
             # Create the lambdified functions with updated s_K, tau, alpha, phi, and delta values
-            hcht_expr = (((tau + par.n + par.g + delta + par.n * par.g) / s_K) ** (1 / phi)) * (par.ktilde_t ** ((1 - alpha) / phi))
+            hcht_expr = (((delta + tau + par.n + par.g + par.n * par.g) / s_K) ** (1 / phi)) * (par.ktilde_t ** ((1 - alpha) / phi))
             hckt_expr = ((tau * par.ktilde_t)/(par.n+par.g+delta+par.n*par.g))
-            hcht_func = sm.lambdify(par.ktilde_t, hcht_expr.subs({par.alpha: alpha, par.phi: phi, par.delta: delta, par.n: par.n, par.g: par.g, par.s_K: s_K, par.tau: tau}))
-            hckt_func = sm.lambdify(par.ktilde_t, hckt_expr.subs({par.alpha: alpha, par.phi: phi, par.delta: delta, par.n: par.n, par.g: par.g, par.s_K: s_K, par.tau: tau}))
+            hcht_func = sm.lambdify(par.htilde_t, hcht_expr.subs({par.alpha: alpha, par.phi: phi, par.delta: delta, par.n: par.n, par.g: par.g, par.s_K: s_K, par.tau: tau}))
+            hckt_func = sm.lambdify(par.htilde_t, hckt_expr.subs({par.alpha: alpha, par.phi: phi, par.delta: delta, par.n: par.n, par.g: par.g, par.s_K: s_K, par.tau: tau}))
 
             # Evaluate the functions for different t_values
             ktilde_vals = np.linspace(0, periods-1, periods)
