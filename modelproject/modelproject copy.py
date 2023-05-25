@@ -1,5 +1,4 @@
 from types import SimpleNamespace
-
 from scipy import optimize
 import numpy as np
 import sympy as sm
