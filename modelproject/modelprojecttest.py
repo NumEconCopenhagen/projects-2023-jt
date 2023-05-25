@@ -535,12 +535,18 @@ class SolowGeneral:
         # We start by setting up our algebraic parameters
         par.K = sm.symbols('k')
         par.A = sm.symbols('a')
+        par.L = sm.symbols('L')
+        par.Y = sm.symbols('Y')
+        par.S = sm.symbols('S')
         
         par.alpha = sm.symbols('alpha')
         par.delta = sm.symbols('delta')
         par.s = sm.symbols('s')
         par.g = sm.symbols('g')
         par.n = sm.symbols('n')
+
+        # We defien our capital per effective worker
+        par.k = sm.symbols('k')
 
         # Defining our sim variables
         sim.alpha = 1/3
@@ -551,4 +557,67 @@ class SolowGeneral:
 
     # We start by defining the equations of the model
     def productionfunction(self):
-        sm.Eq()
+        par = self.par
+
+        f = par.k**par.alpha
+        q = (par.A * par.L)**(1-par.alpha)
+        production = sm.Eq(par.Y, f * q) 
+
+        return production
+    
+    def savings(self):
+        par = self.par
+        savings = sm.Eq(par.S, (par.s*par.Y))
+
+        return savings
+    
+    def laboursupply(self):
+        par = self.par
+        laboursupply = sm.Eq(par.L, (1+par.n))*par.L
+
+        return laboursupply
+    
+    def technology(self):
+        par = self.par
+        technology = sm.Eq(par.A, (1+par.g))*par.A
+
+        return technology
+    
+    def capital(self):
+        par = self.par
+        capital = sm.Eq(par.K, (1-par.delta)*par.K + par.S)
+
+        return capital
+    
+    def steadystate_analytical(self):
+        par = self.par
+        # We define our transition equation
+        f = par.k**par.alpha
+        tranisition = sm.Eq(par.k, 1/((1+par.n)*(1+par.g))*((1-par.delta)*par.k + par.s*f))
+
+        # We solve for the steady state
+        steady_state = sm.solve(tranisition, par.k)[0]
+
+        return steady_state
+    
+    def steadystate_value(self): 
+
+        par = self.par
+        sim = self.sim
+
+        # We turn our symbolic steady state into a function
+        steady_state_func = sm.lambdify((par.s,par.g,par.n,par.delta,par.alpha), self.steadystate_analytical())
+
+        return steady_state_func(sim.s,sim.g,sim.n,sim.delta,sim.alpha)
+    
+    def steadystate_numerical(self) :
+        par = self.par
+        sim = self.sim
+
+        # We define the equation we want to solve
+        f = lambda k: par.k**par.alpha
+        tranisition = lambda k: k - 1/((1+par.n)*(1+par.g))*((1-par.delta)*k + par.s*f(k))
+
+        ss = optimize.root_scalar(tranisition, bracket=[0.1, 100], method='brentq')
+
+        return ss.root
