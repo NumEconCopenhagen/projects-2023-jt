@@ -38,8 +38,8 @@ class SolowGeneral:
         sim.alpha = 1/3
         sim.delta = 0.02
         sim.s = 0.2
-        sim.g = 0.02
-        sim.n = 0.01
+        sim.g = 0.016
+        sim.n = 0.014
 
 
     # We start by defining the equations of the model
@@ -109,11 +109,25 @@ class SolowGeneral:
 
         return ss.root
     
-    def transitionequation(self):
+    def transitionequation(self, k_t):
+        par = self.par
         
-        par = self.sim
-        
-        k_t1 = 1/((1+par.n)*(1+par.g))*(par.s*k_t**par.alpha)
+        k_t1 = 1/((1+par.n)*(1+par.g))*(par.s*k_t**par.alpha + (1-par.delta)*k_t)
+        return k_t1
+
+    def simulation(self, periods=100):
+        par = self.par
+        kt_values = range(periods)  # Range of kt values from 0 to 100
+        kt1_values = []
+        for kt in kt_values:
+            kt1 = 1 / ((1 + par.n) * (1 + par.g)) * (par.s * kt ** par.alpha + (1 - par.delta) * kt)
+            kt1_values.append(kt1)
+        plt.plot(kt_values, kt1_values)
+        plt.xlabel('kt')
+        plt.ylabel('kt1')
+        plt.title('Transition Equation')
+        plt.grid(True)
+        plt.show()
 
 
 # Creating a class for the extended Solowmodel with human capital
@@ -349,7 +363,6 @@ class SimulationClass:
         sim.g = 0.016
         sim.s_K = 0.25
         sim.s_H = 0.129
-        sim.tau = 0  # Removed the enable_tax parameter and set tau to 0 by default
 
         # Defining our starting values
         sim.K0 = 1
