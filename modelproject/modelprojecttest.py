@@ -523,3 +523,32 @@ class ExtensionClass:
             delta=widgets.FloatSlider(min=0.01, max=0.2, step=0.01, value=0.02)
         )
         display(interactive_plot)
+    
+class SolowGeneral:
+    def __init__(self):
+
+        # Setting up parameters
+        # Defining namespaces
+        par = self.par = SimpleNamespace()
+        sim = self.sim = SimpleNamespace()
+
+        # We start by setting up our algebraic parameters
+        par.K = sm.symbols('k')
+        par.A = sm.symbols('a')
+        
+        par.alpha = sm.symbols('alpha')
+        par.delta = sm.symbols('delta')
+        par.s = sm.symbols('s')
+        par.g = sm.symbols('g')
+        par.n = sm.symbols('n')
+
+        # Defining our sim variables
+        sim.alpha = 1/3
+        sim.delta = 0.02
+        sim.s = 0.2
+        sim.g = 0.02
+        sim.n = 0.01
+
+    # We start by defining the equations of the model
+    def productionfunction(self):
+        sm.Eq()
