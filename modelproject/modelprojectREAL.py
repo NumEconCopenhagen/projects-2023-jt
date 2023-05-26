@@ -38,7 +38,7 @@ class SolowGeneral:
         # Defining our sim variables
         sim.alpha = 1/3
         sim.delta = 0.02
-        sim.s = 0.2
+        sim.s = 0.2  
         sim.g = 0.02
         sim.n = 0.01
 
@@ -110,7 +110,7 @@ class SolowGeneral:
 
         return ss.root
     
-    def plot_transition_diagram(self, k_0=1, num_periods=100):
+    def plot_transition_diagram(self, k_0=1e-7, num_periods=10000):
         """
         Plot the transition diagram for the capital stock.
 
@@ -137,6 +137,8 @@ class SolowGeneral:
         plt.legend()
         plt.grid(True)
         plt.show()
+
+
         
     def simulation(self, periods=300):
         t_values = range(periods)
