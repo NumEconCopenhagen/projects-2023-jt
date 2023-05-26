@@ -20,7 +20,7 @@ class GDP_CapitaClass :
         Population = pd.DataFrame()
         Merge = pd.DataFrame()
 
-    def Get_GDP(self):
+    def Get_GDP(self,do_print=False):
  
         # We access the data from eurostat
         df = eurostat.get_data_df('nama_10_gdp')
@@ -34,6 +34,8 @@ class GDP_CapitaClass :
         # this is done to make it easier, and faster, to work with the data
         # without having to access the data source everytime we want to use the data
         self.GDP = gdp
+        if do_print == True:
+            print(gdp.head())
         return 
     
     def Clean_GDP (self) : 
