@@ -8,6 +8,7 @@ from ipywidgets import interact
 import pandas as pd 
 import matplotlib.pyplot as plt
 import ipywidgets as widgets
+from IPython.display import display
 
 # Creating a class for the general Solow model
 
@@ -41,41 +42,10 @@ class SolowGeneral:
         sim.s = 0.2  
         sim.g = 0.02
         sim.n = 0.01
+        self.num_periods = 100
+        self.k_0 = 1e-7
 
 
-    # # We start by defining the equations of the model
-    # def productionfunction(self):
-    #     par = self.par
-
-    #     f = par.k**par.alpha
-    #     q = (par.A * par.L)**(1-par.alpha)
-    #     production = sm.Eq(par.Y, f * q) 
-
-    #     return production
-    
-    # def savings(self):
-    #     par = self.par
-    #     savings = sm.Eq(par.S, (par.s*par.Y))
-
-    #     return savings
-    
-    # def laboursupply(self):
-    #     par = self.par
-    #     laboursupply = sm.Eq(par.L, (1+par.n))*par.L
-
-    #     return laboursupply
-    
-    # def technology(self):
-    #     par = self.par
-    #     technology = sm.Eq(par.A, (1+par.g))*par.A
-
-    #     return technology
-    
-    # def capital(self):
-    #     par = self.par
-    #     capital = sm.Eq(par.K, (1-par.delta)*par.K + par.S)
-
-    #     return capital
     
     def steadystate_analytical(self):
         par = self.par
@@ -110,25 +80,21 @@ class SolowGeneral:
 
         return ss.root
     
-    def plot_transition_diagram(self, k_0=1e-7, num_periods=100):
+    def plot_transition_diagram(self):
         """
         Plot the transition diagram for the capital stock.
-
-        Parameters:
-            k_0 (float): Initial capital stock value (default: 1).
-            num_periods (int): Number of periods to simulate (default: 100).
         """
-        k_values = [k_0]  # List to store the capital stock values
-        self.sim.alpha = 1/3
+        k_values = [self.k_0]  # List to store the capital stock values
 
         # Calculate the capital stock values for each period
-        for _ in range(num_periods):
+        for _ in range(self.num_periods):
             k_t = k_values[-1]  # Current capital stock
-            k_t1 = 1 / ((1 + self.sim.n) * (1 + self.sim.g)) * (self.sim.s * k_t ** self.sim.alpha + (1 - self.sim.delta) * k_t)
+            k_t1 = 1 / ((1 + self.sim.n) * (1 + self.sim.g)) * (
+                    self.sim.s * k_t ** self.sim.alpha + (1 - self.sim.delta) * k_t)
             k_values.append(k_t1)
 
         # Transition diagram plotting
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(10, 6)) 
         plt.plot(k_values[:-1], k_values[1:], 'bo-', markersize=0, linewidth=1, label='k_t1')
         plt.plot(k_values[:-1], k_values[:-1], 'ro-', markersize=0, linewidth=1, label='k_t')
         plt.xlabel('Capital Stock at t')
@@ -138,6 +104,29 @@ class SolowGeneral:
         plt.grid(True)
         plt.show()
 
+    def display_interactive_plot(self):
+        # FloatSliders for simulation variables
+        num_periods_slider = widgets.IntSlider(min=1, max=500, step=1, value=300, description='Num Periods')
+        alpha_slider = widgets.FloatSlider(min=0, max=0.5, step=0.01, value=1/3, description='Alpha')
+        delta_slider = widgets.FloatSlider(min=0, max=0.5, step=0.01, value=0.02, description='Delta')
+        n_slider = widgets.FloatSlider(min=0, max=0.5, step=0.01, value=0.01, description='n')
+        g_slider = widgets.FloatSlider(min=0, max=0.5, step=0.01, value=0.02, description='g')
+        s_slider = widgets.FloatSlider(min=0, max=0.5, step=0.01, value=0.20, description='s')
+        num_periods_slider = widgets.IntSlider(min=0, max=500, step=1, value=200, description='Num Periods')
+
+        # Interactive update of simulation variables
+        def update_sliders(num_periods, alpha, delta, n, g, s):
+            self.num_periods = num_periods
+            self.sim.alpha = alpha
+            self.sim.delta = delta
+            self.sim.n = n
+            self.sim.g = g
+            self.sim.s = s
+            self.plot_transition_diagram()
+
+        interactive_plot = widgets.interactive(update_sliders,
+                                               alpha=alpha_slider, delta=delta_slider, n=n_slider, g=g_slider, s=s_slider, num_periods=num_periods_slider)
+        display(interactive_plot)
 
         
     def simulation(self, periods=1000):
@@ -231,65 +220,17 @@ class SolowModelClass:
         # We name our variables
 
         par.K_t = sm.symbols('K_{t}') 
-        #par.K_t1 = sm.symbols('K_{t+1}')
         par.H_t = sm.symbols('H_{t}')
-        #par.H_t1 = sm.symbols('H_{t+1}')
         par.Y_t = sm.symbols('Y_{t}')
         par.A_t = sm.symbols('A_{t}')
-        #par.A_t1 = sm.symbols('A_{t+1}')
         par.L_t = sm.symbols('L_{t}')
-        #par.L_t1 = sm.symbols('L_{t+1}')
-        #par.r_t = sm.symbols('r_{t}')
-       #par.w_t = sm.symbols('w_{t}')
         
         # # We name our per effective worker variables
         par.ktilde_t = sm.symbols('\tilde{k_{t}}')
-        #par.ktilde_t1 = sm.symbols('\tilde{k}_{t+1}')
         par.htilde_t = sm.symbols('\tilde{h_{t}}')
-        #par.htilde_t1 = sm.symbols('\tilde{h}_{t+1}')
         par.ytilde_t = sm.symbols('\tilde{y_{t}}')
 
 
-    # # we will define our functions as given by the book:
-    # def ProductionFunction(self):
-    #     par = self.sim
-    #     Production = sm.Eq(par.Y_t,par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi))
-
-    #     return
-
-    # def LabourSupply(self):
-    #     par = self.sim
-    #     Labor_supply = sm.Eq(par.L_t1,(1+par.n)*par.L_t )
-
-    #     return
-
-    # def LabourProductivity(self):
-    #     par = self.sim
-    #     Productivity = sm.Eq(par.A_t1 , (1+ par.g)*par.A_t)
-
-    #     return
-
-    # def RentalrateOfCapital(self):
-    #     par = self.sim
-    #     RentalRate = sm.Eq(par.r_t,par.alpha * (par.K_t/(par.A_t * par.L_t))^(par.alpha -1) * (par.H_t/(par.A_t * par.L_t))^par.phi)
-
-    #     return
-
-    # def RealWageRate(self):
-    #     par = self.sim
-    #     WageRate = sm.Eq(par.w_t, par.alpha * (par.K_t/(par.A_t * par.L_t))^par.alpha * (par.H_t/(par.A_t * par.L_t))^par.phi * par.A_t)
-
-    #     return
-
-    # def HumanCapitalAccumulation(self):
-    #     par = self.sim
-    #     HumanCapital = sm.Eq(par.H_t1 , par.s_H * par.Y_t + par.delta * par.H_t)
-
-    #     return
-
-    # def PhysicalCapitalAccumulation(self):
-    #     par = self.sim
-    #     PhysicalCapital = sm.Eq(par.K_t1 , par.s_K * par.Y_t + par.delta * par.K_t)
         
     def SteadyStateValues_k(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
         k = sm.symbols('k')
@@ -347,36 +288,6 @@ class SolowModelClass:
 
         return h_ss
  
-    # def SteadyStateValues(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
-    #     k = sm.symbols('k')
-    #     h = sm.symbols('h')
-    #     alpha = sm.symbols('alpha')
-    #     delta = sm.symbols('delta')
-    #     s_K = sm.symbols('s_K')
-    #     s_H = sm.symbols('s_H')
-    #     g = sm.symbols('g')
-    #     n = sm.symbols('n')
-    #     phi = sm.symbols('phi')
-    #     y = k**alpha * h**phi
-
-    #     # We define the function for which we are calculating the ss-value 
-    #     ss_k = sm.Eq(k, 1/((1+n)*(1+g))*((s_K)*y+(1-delta)*k)) 
-    #     # We find the steady state for k, by putting the lef hand side equal to 0
-    #     kss = sm.solve(ss_k,k)[0]
-                
-    #     # We will now do the same for h
-    #     ss_h = sm.Eq(h, 1/((1+n)*(1+g)) * ((s_H)*y+(1-delta)*h) ) 
-    #     hss = sm.solve(ss_h,h)[0]
-
-    #     # We will now do the substitution for h in kss and solve for k
-    #     k_ss = kss.subs(h,hss)
-
-    #     # now we do the substitution for k i hss and solve for h
-    #     h_ss = hss.subs(k,kss)
-
-    #     print('k_ss = ' , sm.latex(k_ss) ,'h_ss = ' , sm.latex(h_ss))
-        
-    #     return 
 
     def SteadyStateFunctions(self,alpha,phi,delta,n,g,s_K,s_H):
 
