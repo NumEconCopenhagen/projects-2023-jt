@@ -110,19 +110,36 @@ class SolowGeneral:
 
         return ss.root
     
-    def transitionequation(self):
-        
-        par = self.sim
-        
-        k_t1 = 1/((1+par.n)*(1+par.g))*(par.s*k_t**par.alpha)
-        
-    def simproduction(self, K_t=1, L_t=1, A_t=1, S_t=1, periods=500):
-        t_values = range(periods)
+    def plot_transition_diagram(self, k_0=1, num_periods=100):
+        """
+        Plot the transition diagram for the capital stock.
 
-        # Starting values
-        K0 = 1
-        L0 = 1
-        A0 = 1
+        Parameters:
+            k_0 (float): Initial capital stock value (default: 1).
+            num_periods (int): Number of periods to simulate (default: 100).
+        """
+        k_values = [k_0]  # List to store the capital stock values
+        self.sim.alpha = 1/3
+
+        # Calculate the capital stock values for each period
+        for _ in range(num_periods):
+            k_t = k_values[-1]  # Current capital stock
+            k_t1 = 1 / ((1 + self.sim.n) * (1 + self.sim.g)) * (self.sim.s * k_t ** self.sim.alpha + (1 - self.sim.delta) * k_t)
+            k_values.append(k_t1)
+
+        # Transition diagram plotting
+        plt.figure(figsize=(10, 6))
+        plt.plot(k_values[:-1], k_values[1:], 'bo-', markersize=0, linewidth=1, label='k_t1')
+        plt.plot(k_values[:-1], k_values[:-1], 'ro-', markersize=0, linewidth=1, label='k_t')
+        plt.xlabel('Capital Stock at t')
+        plt.ylabel('Capital Stock at t+1')
+        plt.title('Transition Diagram: Capital Stock')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+        
+    def simulation(self, periods=300):
+        t_values = range(periods)
 
         sim = self.sim
 
@@ -131,38 +148,54 @@ class SolowGeneral:
         L = np.zeros(periods)
         A = np.zeros(periods)
 
-        for t in t_values:
-            Y[t] = K_t ** sim.alpha * (A_t * L_t) ** (1 - sim.alpha)
-            K_tnext = S_t + (1 - sim.delta) * K_t
-            S_t = sim.s * Y[t]
-            L_tnext = (1 + sim.n) * L_t
-            A_tnext = (1 + sim.g) * A_t
+        alpha_slider = widgets.FloatSlider(min=0, max=0.5, step=0.01, value=1/3, description='Alpha:')
+        delta_slider = widgets.FloatSlider(min=0, max=0.5, step=0.01, value=0.02, description='Delta:')
+        s_slider = widgets.FloatSlider(min=0, max=1, step=0.01, value=0.2, description='S:')
+        n_slider = widgets.FloatSlider(min=0, max=0.5, step=0.01, value=0.01, description='N:')
+        g_slider = widgets.FloatSlider(min=0, max=0.5, step=0.01, value=0.02, description='G:')
+        periods_slider = widgets.IntSlider(value=periods, min=100, max=1000, step=100, description='Periods:')
 
-            K[t] = K_t
-            L[t] = L_t
-            A[t] = A_t
+        @widgets.interact(alpha=alpha_slider, delta=delta_slider, s=s_slider, n=n_slider, g=g_slider, periods=periods_slider)
+        def update_simulation(alpha, delta, s, n, g, periods):
+            nonlocal Y, K, L, A
 
-            # Update the variables for the next time step
-            K_t = K_tnext
-            L_t = L_tnext
-            A_t = A_tnext
-        
-        kpercap = K/L
-        ktilde = kpercap / A
-        
-        plt.plot(ktilde)
-    
-    def simulate_interactively(self):
-        interact(
-            self.simproduction,
-            K_t=(0, 10, 0.1),
-            L_t=(0, 10, 0.1),
-            A_t=(0, 10, 0.1),
-            S_t=(0, 10, 0.1),
-            periods=(100, 1000, 100)
-        )
+            sim.alpha = alpha
+            sim.delta = delta
+            sim.s = s
+            sim.n = n
+            sim.g = g
 
+            K_t = 1
+            L_t = 1
+            A_t = 1
+            S_t = 1
 
+            for t in t_values:
+                Y[t] = K_t ** sim.alpha * (A_t * L_t) ** (1 - sim.alpha)
+                K_tnext = S_t + (1 - sim.delta) * K_t
+                S_t = sim.s * Y[t]
+                L_tnext = (1 + sim.n) * L_t
+                A_tnext = (1 + sim.g) * A_t
+
+                K[t] = K_t
+                L[t] = L_t
+                A[t] = A_t
+
+                # Update the variables for the next time step
+                K_t = K_tnext
+                L_t = L_tnext
+                A_t = A_tnext
+
+            kpercap = K / L
+            ktilde = kpercap / A
+
+            plt.plot(ktilde, label="Technology adjusted capital per worker")
+            plt.ylabel("Level of capital")
+            plt.xlabel("Periods")
+            plt.grid(True)
+            plt.legend(loc=4)
+            plt.title(f"Simulation of capital for {periods} periods")
+            plt.xlim(0, periods)
         
         
 
@@ -255,6 +288,66 @@ class SolowModelClass:
     def PhysicalCapitalAccumulation(self):
         par = self.sim
         PhysicalCapital = sm.Eq(par.K_t1 , par.s_K * par.Y_t + par.delta * par.K_t)
+        
+    def SteadyStateValues_k(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
+        k = sm.symbols('k')
+        h = sm.symbols('h')
+        alpha = sm.symbols('alpha')
+        delta = sm.symbols('delta')
+        s_K = sm.symbols('s_K')
+        s_H = sm.symbols('s_H')
+        g = sm.symbols('g')
+        n = sm.symbols('n')
+        phi = sm.symbols('phi')
+        y = k**alpha * h**phi
+        # We define the function for which we are calculating the ss-value 
+        ss_k = sm.Eq(k, 1/((1+n)*(1+g))*((s_K)*y+(1-delta)*k)) 
+        # We find the steady state for k, by putting the lef hand side equal to 0
+        kss = sm.solve(ss_k,k)[0]
+                
+        # We will now do the same for h
+        ss_h = sm.Eq(h, 1/((1+n)*(1+g)) * ((s_H)*y+(1-delta)*h) ) 
+        hss = sm.solve(ss_h,h)[0]
+        ## print('We now have these two values', 'k*=', kss , 'and h*=' , hss)
+        ## print('We now need to substitute to find the real steady state values')
+        # We will now do the substitution for h in kss and solve for k
+        k_ss = kss.subs(h,hss)
+        # now we do the substitution for k i hss and solve for h
+        h_ss = hss.subs(k,kss)
+        return k_ss
+    
+    def SteadyStateValues_h(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
+        k = sm.symbols('k')
+        h = sm.symbols('h')
+        alpha = sm.symbols('alpha')
+        delta = sm.symbols('delta')
+        s_K = sm.symbols('s_K')
+        s_H = sm.symbols('s_H')
+        g = sm.symbols('g')
+        n = sm.symbols('n')
+        phi = sm.symbols('phi')
+        y = k**alpha * h**phi
+
+        # We define the function for which we are calculating the ss-value 
+        ss_k = sm.Eq(k, 1/((1+n)*(1+g))*((s_K)*y+(1-delta)*k)) 
+        # We find the steady state for k, by putting the lef hand side equal to 0
+        kss = sm.solve(ss_k,k)[0]
+                
+        # We will now do the same for h
+        ss_h = sm.Eq(h, 1/((1+n)*(1+g)) * ((s_H)*y+(1-delta)*h) ) 
+        hss = sm.solve(ss_h,h)[0]
+
+        ## print('We now have these two values', 'k*=', kss , 'and h*=' , hss)
+
+        ## print('We now need to substitute to find the real steady state values')
+
+        # We will now do the substitution for h in kss and solve for k
+        k_ss = kss.subs(h,hss)
+
+        # now we do the substitution for k i hss and solve for h
+        h_ss = hss.subs(k,kss)
+
+        return h_ss
  
     def SteadyStateValues(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
         k = sm.symbols('k')
@@ -433,7 +526,7 @@ class SimulationClass:
         Anext = (1 + sim.g) * A
         return Anext
 
-    def simulate(self, periods=100, interactive=False, destroy_period=None):
+    def simulate(self, periods=100, interactive=True):
         Yvalues = np.zeros(periods)
         Kvalues = np.zeros(periods)
         Hvalues = np.zeros(periods)
@@ -451,8 +544,6 @@ class SimulationClass:
             H = self.Hnextperiod(H, Y, K)
             L = self.Lnextperiod(L)
             A = self.Anextperiod(A)
-            if destroy_period is not None and t == destroy_period:
-                K *= 0.5
 
             Yvalues[t] = Y
             Kvalues[t] = K
