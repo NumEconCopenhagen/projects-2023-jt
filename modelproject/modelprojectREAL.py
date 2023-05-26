@@ -43,39 +43,39 @@ class SolowGeneral:
         sim.n = 0.01
 
 
-    # We start by defining the equations of the model
-    def productionfunction(self):
-        par = self.par
+    # # We start by defining the equations of the model
+    # def productionfunction(self):
+    #     par = self.par
 
-        f = par.k**par.alpha
-        q = (par.A * par.L)**(1-par.alpha)
-        production = sm.Eq(par.Y, f * q) 
+    #     f = par.k**par.alpha
+    #     q = (par.A * par.L)**(1-par.alpha)
+    #     production = sm.Eq(par.Y, f * q) 
 
-        return production
+    #     return production
     
-    def savings(self):
-        par = self.par
-        savings = sm.Eq(par.S, (par.s*par.Y))
+    # def savings(self):
+    #     par = self.par
+    #     savings = sm.Eq(par.S, (par.s*par.Y))
 
-        return savings
+    #     return savings
     
-    def laboursupply(self):
-        par = self.par
-        laboursupply = sm.Eq(par.L, (1+par.n))*par.L
+    # def laboursupply(self):
+    #     par = self.par
+    #     laboursupply = sm.Eq(par.L, (1+par.n))*par.L
 
-        return laboursupply
+    #     return laboursupply
     
-    def technology(self):
-        par = self.par
-        technology = sm.Eq(par.A, (1+par.g))*par.A
+    # def technology(self):
+    #     par = self.par
+    #     technology = sm.Eq(par.A, (1+par.g))*par.A
 
-        return technology
+    #     return technology
     
-    def capital(self):
-        par = self.par
-        capital = sm.Eq(par.K, (1-par.delta)*par.K + par.S)
+    # def capital(self):
+    #     par = self.par
+    #     capital = sm.Eq(par.K, (1-par.delta)*par.K + par.S)
 
-        return capital
+    #     return capital
     
     def steadystate_analytical(self):
         par = self.par
@@ -110,7 +110,7 @@ class SolowGeneral:
 
         return ss.root
     
-    def plot_transition_diagram(self, k_0=1e-7, num_periods=10000):
+    def plot_transition_diagram(self, k_0=1e-7, num_periods=100):
         """
         Plot the transition diagram for the capital stock.
 
@@ -140,7 +140,7 @@ class SolowGeneral:
 
 
         
-    def simulation(self, periods=300):
+    def simulation(self, periods=1000):
         t_values = range(periods)
 
         sim = self.sim
@@ -231,65 +231,65 @@ class SolowModelClass:
         # We name our variables
 
         par.K_t = sm.symbols('K_{t}') 
-        par.K_t1 = sm.symbols('K_{t+1}')
+        #par.K_t1 = sm.symbols('K_{t+1}')
         par.H_t = sm.symbols('H_{t}')
-        par.H_t1 = sm.symbols('H_{t+1}')
+        #par.H_t1 = sm.symbols('H_{t+1}')
         par.Y_t = sm.symbols('Y_{t}')
         par.A_t = sm.symbols('A_{t}')
-        par.A_t1 = sm.symbols('A_{t+1}')
+        #par.A_t1 = sm.symbols('A_{t+1}')
         par.L_t = sm.symbols('L_{t}')
-        par.L_t1 = sm.symbols('L_{t+1}')
-        par.r_t = sm.symbols('r_{t}')
-        par.w_t = sm.symbols('w_{t}')
+        #par.L_t1 = sm.symbols('L_{t+1}')
+        #par.r_t = sm.symbols('r_{t}')
+       #par.w_t = sm.symbols('w_{t}')
         
-        # We name our per effective worker variables
+        # # We name our per effective worker variables
         par.ktilde_t = sm.symbols('\tilde{k_{t}}')
-        par.ktilde_t1 = sm.symbols('\tilde{k}_{t+1}')
+        #par.ktilde_t1 = sm.symbols('\tilde{k}_{t+1}')
         par.htilde_t = sm.symbols('\tilde{h_{t}}')
-        par.htilde_t1 = sm.symbols('\tilde{h}_{t+1}')
+        #par.htilde_t1 = sm.symbols('\tilde{h}_{t+1}')
         par.ytilde_t = sm.symbols('\tilde{y_{t}}')
 
 
-    # we will define our functions as given by the book:
-    def ProductionFunction(self):
-        par = self.sim
-        Production = sm.Eq(par.Y_t,par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi))
+    # # we will define our functions as given by the book:
+    # def ProductionFunction(self):
+    #     par = self.sim
+    #     Production = sm.Eq(par.Y_t,par.K_t**par.alpha * par.H_t**par.phi * (par.A_t * par.L_t)^(1-par.alpha - par.phi))
 
-        return
+    #     return
 
-    def LabourSupply(self):
-        par = self.sim
-        Labor_supply = sm.Eq(par.L_t1,(1+par.n)*par.L_t )
+    # def LabourSupply(self):
+    #     par = self.sim
+    #     Labor_supply = sm.Eq(par.L_t1,(1+par.n)*par.L_t )
 
-        return
+    #     return
 
-    def LabourProductivity(self):
-        par = self.sim
-        Productivity = sm.Eq(par.A_t1 , (1+ par.g)*par.A_t)
+    # def LabourProductivity(self):
+    #     par = self.sim
+    #     Productivity = sm.Eq(par.A_t1 , (1+ par.g)*par.A_t)
 
-        return
+    #     return
 
-    def RentalrateOfCapital(self):
-        par = self.sim
-        RentalRate = sm.Eq(par.r_t,par.alpha * (par.K_t/(par.A_t * par.L_t))^(par.alpha -1) * (par.H_t/(par.A_t * par.L_t))^par.phi)
+    # def RentalrateOfCapital(self):
+    #     par = self.sim
+    #     RentalRate = sm.Eq(par.r_t,par.alpha * (par.K_t/(par.A_t * par.L_t))^(par.alpha -1) * (par.H_t/(par.A_t * par.L_t))^par.phi)
 
-        return
+    #     return
 
-    def RealWageRate(self):
-        par = self.sim
-        WageRate = sm.Eq(par.w_t, par.alpha * (par.K_t/(par.A_t * par.L_t))^par.alpha * (par.H_t/(par.A_t * par.L_t))^par.phi * par.A_t)
+    # def RealWageRate(self):
+    #     par = self.sim
+    #     WageRate = sm.Eq(par.w_t, par.alpha * (par.K_t/(par.A_t * par.L_t))^par.alpha * (par.H_t/(par.A_t * par.L_t))^par.phi * par.A_t)
 
-        return
+    #     return
 
-    def HumanCapitalAccumulation(self):
-        par = self.sim
-        HumanCapital = sm.Eq(par.H_t1 , par.s_H * par.Y_t + par.delta * par.H_t)
+    # def HumanCapitalAccumulation(self):
+    #     par = self.sim
+    #     HumanCapital = sm.Eq(par.H_t1 , par.s_H * par.Y_t + par.delta * par.H_t)
 
-        return
+    #     return
 
-    def PhysicalCapitalAccumulation(self):
-        par = self.sim
-        PhysicalCapital = sm.Eq(par.K_t1 , par.s_K * par.Y_t + par.delta * par.K_t)
+    # def PhysicalCapitalAccumulation(self):
+    #     par = self.sim
+    #     PhysicalCapital = sm.Eq(par.K_t1 , par.s_K * par.Y_t + par.delta * par.K_t)
         
     def SteadyStateValues_k(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
         k = sm.symbols('k')
@@ -339,10 +339,6 @@ class SolowModelClass:
         ss_h = sm.Eq(h, 1/((1+n)*(1+g)) * ((s_H)*y+(1-delta)*h) ) 
         hss = sm.solve(ss_h,h)[0]
 
-        ## print('We now have these two values', 'k*=', kss , 'and h*=' , hss)
-
-        ## print('We now need to substitute to find the real steady state values')
-
         # We will now do the substitution for h in kss and solve for k
         k_ss = kss.subs(h,hss)
 
@@ -351,40 +347,36 @@ class SolowModelClass:
 
         return h_ss
  
-    def SteadyStateValues(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
-        k = sm.symbols('k')
-        h = sm.symbols('h')
-        alpha = sm.symbols('alpha')
-        delta = sm.symbols('delta')
-        s_K = sm.symbols('s_K')
-        s_H = sm.symbols('s_H')
-        g = sm.symbols('g')
-        n = sm.symbols('n')
-        phi = sm.symbols('phi')
-        y = k**alpha * h**phi
+    # def SteadyStateValues(k,h,alpha,delta,s_K,s_H,g,n,phi, do_print=False):
+    #     k = sm.symbols('k')
+    #     h = sm.symbols('h')
+    #     alpha = sm.symbols('alpha')
+    #     delta = sm.symbols('delta')
+    #     s_K = sm.symbols('s_K')
+    #     s_H = sm.symbols('s_H')
+    #     g = sm.symbols('g')
+    #     n = sm.symbols('n')
+    #     phi = sm.symbols('phi')
+    #     y = k**alpha * h**phi
 
-        # We define the function for which we are calculating the ss-value 
-        ss_k = sm.Eq(k, 1/((1+n)*(1+g))*((s_K)*y+(1-delta)*k)) 
-        # We find the steady state for k, by putting the lef hand side equal to 0
-        kss = sm.solve(ss_k,k)[0]
+    #     # We define the function for which we are calculating the ss-value 
+    #     ss_k = sm.Eq(k, 1/((1+n)*(1+g))*((s_K)*y+(1-delta)*k)) 
+    #     # We find the steady state for k, by putting the lef hand side equal to 0
+    #     kss = sm.solve(ss_k,k)[0]
                 
-        # We will now do the same for h
-        ss_h = sm.Eq(h, 1/((1+n)*(1+g)) * ((s_H)*y+(1-delta)*h) ) 
-        hss = sm.solve(ss_h,h)[0]
+    #     # We will now do the same for h
+    #     ss_h = sm.Eq(h, 1/((1+n)*(1+g)) * ((s_H)*y+(1-delta)*h) ) 
+    #     hss = sm.solve(ss_h,h)[0]
 
-        ## print('We now have these two values', 'k*=', kss , 'and h*=' , hss)
+    #     # We will now do the substitution for h in kss and solve for k
+    #     k_ss = kss.subs(h,hss)
 
-        ## print('We now need to substitute to find the real steady state values')
+    #     # now we do the substitution for k i hss and solve for h
+    #     h_ss = hss.subs(k,kss)
 
-        # We will now do the substitution for h in kss and solve for k
-        k_ss = kss.subs(h,hss)
-
-        # now we do the substitution for k i hss and solve for h
-        h_ss = hss.subs(k,kss)
-
-        print('k_ss = ' , sm.latex(k_ss) ,'h_ss = ' , sm.latex(h_ss))
+    #     print('k_ss = ' , sm.latex(k_ss) ,'h_ss = ' , sm.latex(h_ss))
         
-        return 
+    #     return 
 
     def SteadyStateFunctions(self,alpha,phi,delta,n,g,s_K,s_H):
 
@@ -475,7 +467,6 @@ class SolowModelClass:
 
         # Call the interactive function with the sliders as arguments
         widgets.interact(plot_function, s_K=s_K_slider, s_H=s_H_slider, alpha_phi=alpha_phi_slider, delta=delta_slider, periods=periods_dropdown)
-
 
 
 
