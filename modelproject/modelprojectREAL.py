@@ -115,6 +115,56 @@ class SolowGeneral:
         par = self.sim
         
         k_t1 = 1/((1+par.n)*(1+par.g))*(par.s*k_t**par.alpha)
+        
+    def simproduction(self, K_t=1, L_t=1, A_t=1, S_t=1, periods=500):
+        t_values = range(periods)
+
+        # Starting values
+        K0 = 1
+        L0 = 1
+        A0 = 1
+
+        sim = self.sim
+
+        Y = np.zeros(periods)
+        K = np.zeros(periods)
+        L = np.zeros(periods)
+        A = np.zeros(periods)
+
+        for t in t_values:
+            Y[t] = K_t ** sim.alpha * (A_t * L_t) ** (1 - sim.alpha)
+            K_tnext = S_t + (1 - sim.delta) * K_t
+            S_t = sim.s * Y[t]
+            L_tnext = (1 + sim.n) * L_t
+            A_tnext = (1 + sim.g) * A_t
+
+            K[t] = K_t
+            L[t] = L_t
+            A[t] = A_t
+
+            # Update the variables for the next time step
+            K_t = K_tnext
+            L_t = L_tnext
+            A_t = A_tnext
+        
+        kpercap = K/L
+        ktilde = kpercap / A
+        
+        plt.plot(ktilde)
+    
+    def simulate_interactively(self):
+        interact(
+            self.simproduction,
+            K_t=(0, 10, 0.1),
+            L_t=(0, 10, 0.1),
+            A_t=(0, 10, 0.1),
+            S_t=(0, 10, 0.1),
+            periods=(100, 1000, 100)
+        )
+
+
+        
+        
 
 
 # Creating a class for the extended Solowmodel with human capital
